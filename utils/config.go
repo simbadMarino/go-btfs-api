@@ -4,7 +4,9 @@ import (
 	"fmt"
 	config "github.com/TRON-US/go-btfs-config"
 	serialize "github.com/TRON-US/go-btfs-config/serialize"
+	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/opentracing/opentracing-go/log"
+	"github.com/tron-us/go-btfs-common/crypto"
 	"github.com/tron-us/go-common/v2/env"
 )
 
@@ -39,9 +41,28 @@ func init() {
 	}
 	if _, s := env.GetEnv("PUBLIC_KEY"); s != "" {
 		PublicKey = s
+	} else {
+		peerId, err := peer.IDB58Decode(PeerId)
+		if err != nil {
+			log.Error(err)
+		}
+		publicKey, err := peerId.ExtractPublicKey()
+		if err != nil {
+			log.Error(err)
+		}
+		PublicKey, err = crypto.FromPubKey(publicKey)
+		if err != nil {
+			log.Error(err)
+		}
+
 	}
 	fmt.Println("Loaded private key: " + PrivateKey)
 	fmt.Println("Loaded peer id: " + PeerId)
+	fmt.Println("Loaded public key: " + PublicKey)
+}
+
+func errorReport(err error) {
+	fmt.Println(err)
 }
 
 func LoadPrivateKey() string {

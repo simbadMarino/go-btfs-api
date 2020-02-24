@@ -12,6 +12,7 @@ import (
 
 	utils "github.com/TRON-US/go-btfs-api/utils"
 
+	ic "github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/tron-us/go-btfs-common/crypto"
 	escrowpb "github.com/tron-us/go-btfs-common/protos/escrow"
 	guardpb "github.com/tron-us/go-btfs-common/protos/guard"
@@ -72,12 +73,6 @@ func Hosts(hosts string) StorageOpts {
 	}
 }
 
-func OfflineSignMode(enabled bool) StorageOpts {
-	return func(rb *RequestBuilder) error {
-		rb.Option("offline-sign-mode", enabled)
-		return nil
-	}
-}
 
 func (d UnsignedData) SignData(privateKey string) ([]byte, error) {
 	privKey, _ := crypto.ToPrivKey(privateKey)
@@ -220,7 +215,7 @@ func (s *Shell) StorageUpload(hash string, options ...StorageUploadOpts) (string
 func (s *Shell) StorageUploadOffSign(hash string, uts string, options ...StorageUploadOpts) (string, error) {
 	var out storageUploadResponse
 	offlinePeerSessionSignature, _ := getSessionSignature(hash, utils.PeerId)
-	rb := s.Request("storage/upload", hash, utils.PeerId, uts, offlinePeerSessionSignature)
+	rb := s.Request("storage/upload/offline", hash, utils.PeerId, uts, offlinePeerSessionSignature)
 	for _, option := range options {
 		_ = option(rb)
 	}
@@ -268,7 +263,7 @@ func (s *Shell) StorageUploadSignBatch(sid string, hash string, unsignedBatchCon
 			return nil, err
 		}
 
-		rb := s.Request("storage/upload/signbatch", sid, utils.PeerId, uts, offlinePeerSessionSignature,
+		rb := s.Request("storage/upload/signcontractbatch", sid, utils.PeerId, uts, offlinePeerSessionSignature,
 			sessionStatus, string(bytesSignBatch))
 		return out, rb.Exec(context.Background(), &out)
 	}
@@ -291,6 +286,7 @@ func (s *Shell) StorageUploadSign(id string, hash string, unsignedData UnsignedD
 	return nil, errors.New("private key not available in configuration file or environment variable")
 }
 
+const DEBUG = true
 func (s *Shell) StorageUploadSignBalance(id string, hash string, unsignedData UnsignedData, uts string, sessionStatus string) ([]byte, error) {
 	var out []byte
 	var rb *RequestBuilder
@@ -300,7 +296,29 @@ func (s *Shell) StorageUploadSignBalance(id string, hash string, unsignedData Un
 		if err != nil {
 			log.Error("%s", zap.Error(err))
 		}
-		rb = s.Request("storage/upload/sign", id, utils.PeerId, uts, offlinePeerSessionSignature, ledgerSignedPublicKey.String(), sessionStatus)
+		signedBytes, err := proto.Marshal(ledgerSignedPublicKey)    // TODO: check if ic.Marshall is necessary!
+		if err != nil {
+			return nil, err
+		}
+		str, err := bytesToString(signedBytes, Base64)
+		if err != nil {
+			return nil, err
+		}
+		if DEBUG {
+			signedBytes, err := stringToBytes(str, Base64)
+			if err != nil {
+				return nil, err
+			}
+
+			var lgSignedPubKey ledgerpb.SignedPublicKey
+			err = proto.Unmarshal(signedBytes, &lgSignedPubKey)
+			if err != nil {
+				return nil, err
+			}
+
+			fmt.Println(lgSignedPubKey)
+		}
+		rb = s.Request("storage/upload/sign", id, utils.PeerId, uts, offlinePeerSessionSignature, str, sessionStatus)
 		return out, rb.Exec(context.Background(), &out)
 	}
 	return nil, errors.New("private key not available in configuration file or environment variable")
@@ -311,13 +329,37 @@ func (s *Shell) StorageUploadSignPayChannel(id, hash string, unsignedData Unsign
 	var rb *RequestBuilder
 	offlinePeerSessionSignature, now := getSessionSignature(hash, utils.PeerId)
 	if utils.PrivateKey != "" {
-		chanCommit := &ledgerpb.ChannelCommit{
-			Amount: totalPrice, PayerId: now.UnixNano(),
-			Payer:     &ledgerpb.PublicKey{Key: []byte(utils.PublicKey)},
-			Recipient: &ledgerpb.PublicKey{Key: []byte(unsignedData.Unsigned)},
+		unsignedBytes, err := stringToBytes(unsignedData.Unsigned, Base64)
+		if err != nil {
+			return nil, err
 		}
-		privKey, _ := crypto.ToPrivKey(utils.PrivateKey)
-		buyerChanSig, err := crypto.Sign(privKey, chanCommit)
+		escrowPubKey, err := ic.UnmarshalPublicKey(unsignedBytes)
+		if err != nil {
+			return nil, err
+		}
+		buyerPubKey, err := crypto.ToPubKey(utils.PublicKey)
+		if err != nil {
+			return nil, err
+		}
+		fromAddr, err := ic.RawFull(buyerPubKey)
+		if err != nil {
+			return nil, err
+		}
+		toAddr, err := ic.RawFull(escrowPubKey)
+		if err != nil {
+			return nil, err
+		}
+		chanCommit := &ledgerpb.ChannelCommit{
+			Payer:     &ledgerpb.PublicKey{Key: fromAddr},
+			Recipient: &ledgerpb.PublicKey{Key: toAddr},
+			Amount: totalPrice,
+			PayerId: now.UnixNano(),
+		}
+		buyerPrivKey, err := crypto.ToPrivKey(utils.PrivateKey)
+		if err != nil {
+			return nil, err
+		}
+		buyerChanSig, err := crypto.Sign(buyerPrivKey, chanCommit)
 		if err != nil {
 			return nil, err
 		}
@@ -329,18 +371,23 @@ func (s *Shell) StorageUploadSignPayChannel(id, hash string, unsignedData Unsign
 		if err != nil {
 			return nil, err
 		}
-		rb = s.Request("storage/upload/sign", id, utils.PeerId, uts, offlinePeerSessionSignature, string(signedChanCommitBytes), sessionStatus)
+		signedChanCommitBytesStr, err := bytesToString(signedChanCommitBytes, Base64)
+		if err != nil {
+			return nil, err
+		}
+		rb = s.Request("storage/upload/sign", id, utils.PeerId, uts, offlinePeerSessionSignature, signedChanCommitBytesStr, sessionStatus)
 		return out, rb.Exec(context.Background(), &out)
 	}
 	return nil, errors.New("private key not available in configuration file or environment variable")
 }
 
-func (s *Shell) StorageUploadSignPayRequest(id, hash string, unsignedData UnsignedData, uts string, sessionStatus string) ([]byte, error) {
+func (s *Shell) StorageUploadSignPayRequest(id, hash string, unsignedData UnsignedData,
+	uts string, sessionStatus string) ([]byte, error) {
 	var out []byte
 	var rb *RequestBuilder
 	offlinePeerSessionSignature, _ := getSessionSignature(hash, utils.PeerId)
 	if utils.PrivateKey != "" {
-		result := &escrowpb.SignedSubmitContractResult{}
+		result := new(escrowpb.SignedSubmitContractResult)
 		err := proto.Unmarshal([]byte(unsignedData.Unsigned), result)
 		if err != nil {
 			return nil, err
