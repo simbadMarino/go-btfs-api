@@ -3,12 +3,12 @@ package shell
 import (
 	"context"
 	"fmt"
-	"github.com/gogo/protobuf/proto"
-	"github.com/tron-us/go-common/v2/json"
 	"strconv"
 	"time"
 
 	utils "github.com/TRON-US/go-btfs-api/utils"
+	"github.com/gogo/protobuf/proto"
+	"github.com/tron-us/go-common/v2/json"
 
 	ic "github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/tron-us/go-btfs-common/crypto"
@@ -70,7 +70,10 @@ func Hosts(hosts string) StorageOpts {
 }
 
 func (d UnsignedData) SignData(privateKey string) ([]byte, error) {
-	privKey, _ := crypto.ToPrivKey(privateKey)
+	privKey, err := crypto.ToPrivKey(privateKey)
+	if err != nil {
+		return nil, err
+	}
 	signedData, err := privKey.Sign([]byte(d.Unsigned))
 	if err != nil {
 		return nil, err
@@ -79,17 +82,20 @@ func (d UnsignedData) SignData(privateKey string) ([]byte, error) {
 }
 
 func (d UnsignedData) SignBalanceData(privateKey string) (*ledgerpb.SignedPublicKey, error) {
-	privKey, _ := crypto.ToPrivKey(privateKey)
+	privKey, err := crypto.ToPrivKey(privateKey)
+	if err != nil {
+		return nil, err
+	}
 	pubKeyRaw, err := privKey.GetPublic().Raw()
 	if err != nil {
-		return &ledgerpb.SignedPublicKey{}, err
+		return nil, err
 	}
 	lgPubKey := &ledgerpb.PublicKey{
 		Key: pubKeyRaw,
 	}
 	sig, err := crypto.Sign(privKey, lgPubKey)
 	if err != nil {
-		return &ledgerpb.SignedPublicKey{}, err
+		return nil, err
 	}
 	lgSignedPubKey := &ledgerpb.SignedPublicKey{
 		Key:       lgPubKey,

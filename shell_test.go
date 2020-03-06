@@ -386,12 +386,10 @@ func sleepMoment() {
 	time.Sleep(time.Millisecond * 3000)
 }
 
-func randBytes(size int) []byte {
+func randBytes(is is.I, size int) []byte {
 	b := make([]byte, size)
 	_, err := io.ReadFull(u.NewTimeSeededRand(), b)
-	if err != nil {
-		panic(err)
-	}
+	is.Nil(err)
 	return b
 }
 
@@ -402,7 +400,7 @@ func TestStorageUpload(t *testing.T) {
 
 	s := NewShell(shellUrl)
 
-	mhash, err := s.Add(bytes.NewBufferString(string(randBytes(15))), Chunker("reed-solomon-1-1-256000"))
+	mhash, err := s.Add(bytes.NewBufferString(string(randBytes(is, 15))), Chunker("reed-solomon-1-1-256000"))
 	is.Nil(err)
 
 	sessionId, err := s.StorageUpload(mhash)
@@ -435,7 +433,7 @@ func TestStorageUploadWithOffSign(t *testing.T) {
 
 	s := NewShell(shellUrl)
 
-	mhash, err := s.Add(bytes.NewBufferString(string(randBytes(15))), Chunker("reed-solomon-1-1-256000"))
+	mhash, err := s.Add(bytes.NewBufferString(string(randBytes(is, 15))), Chunker("reed-solomon-1-1-256000"))
 	is.Nil(err)
 
 	uts := s.GetUts()
@@ -458,7 +456,8 @@ LOOP:
 			c, err := s.StorageUploadGetContractBatch(sessionId, mhash, uts, storage.Status)
 			is.Nil(err)
 			_, err = s.StorageUploadSignBatch(sessionId, mhash, c, uts, storage.Status)
-			//is.Nil(err)
+			// Note err is set to io.EOF when the btfs daemon returns nil from the endpoint
+			is.Equal(err, io.EOF)
 			fmt.Printf("%#v\n", storage.Status)
 		case "balanceSignReady", "payChannelSignReady", "payRequestSignReady", "guardSignReady":
 			unsigned, err := s.StorageUploadGetUnsignedData(sessionId, mhash, uts, storage.Status)
@@ -466,21 +465,20 @@ LOOP:
 			switch unsigned.Opcode {
 			case "balance":
 				_, err = s.StorageUploadSignBalance(sessionId, mhash, unsigned, uts, storage.Status)
-				// Note EOF returns when the daemon returns nil from the endpoint
-				// is.Nil(err)
+				is.Equal(err, io.EOF)
 				fmt.Println(storage.Status)
 			case "paychannel":
 				_, err = s.
 					StorageUploadSignPayChannel(sessionId, mhash, unsigned, uts, storage.Status, unsigned.Price)
-				//is.Nil(err)
+				is.Equal(err, io.EOF)
 				fmt.Println(storage.Status)
 			case "payrequest":
 				_, err = s.StorageUploadSignPayRequest(sessionId, mhash, unsigned, uts, storage.Status)
-				//is.Nil(err)
+				is.Equal(err, io.EOF)
 				fmt.Println(storage.Status)
 			case "guard":
 				_, err = s.StorageUploadSignGuardFileMeta(sessionId, mhash, unsigned, uts, storage.Status)
-				//is.Nil(err)
+				is.Equal(err, io.EOF)
 				fmt.Println(storage.Status)
 			default:
 				fmt.Printf("unexpected Opcode: %#v continue \n", unsigned.Opcode)

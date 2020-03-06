@@ -7,7 +7,6 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/mitchellh/go-homedir"
 	_ "github.com/mitchellh/go-homedir"
-	"github.com/opentracing/opentracing-go/log"
 	"github.com/tron-us/go-btfs-common/crypto"
 	"github.com/tron-us/go-common/v2/env"
 	"os"
@@ -31,18 +30,7 @@ const (
 
 var ApiConfig ApiConfigStruct
 
-// This function requires that the variables of this module be checked
-// for zero value before using them.
 func init() {
-	spath, err := apiConfigFilename()
-	if err != nil {
-		log.Error(err)
-	}
-	config, err := serialize.Load(spath)
-	if config != nil {
-		log.Error(err)
-	}
-
 	//get variables via environment variable
 	if _, s := env.GetEnv("PRIVATE_KEY"); s != "" {
 		ApiConfig.PrivateKey = s
