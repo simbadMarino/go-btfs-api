@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	serialize "github.com/TRON-US/go-btfs-config/serialize"
 	"github.com/libp2p/go-libp2p-core/peer"
@@ -75,11 +76,17 @@ func LoadApiConfig() error {
 
 	if ApiConfig.PrivateKey == "" {
 		privateKey := config.Identity.PrivKey
+		if privateKey == "" {
+			return errors.New("Identity.PrivKey is not set in .config file")
+		}
 		ApiConfig.PrivateKey = privateKey
 	}
 
 	if ApiConfig.PeerId == "" {
 		peerId := config.Identity.PeerID
+		if peerId == "" {
+			return errors.New("Identity.PeerID is not set in .config file")
+		}
 		ApiConfig.PeerId = peerId
 	}
 

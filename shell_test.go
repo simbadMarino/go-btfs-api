@@ -19,7 +19,7 @@ import (
 
 const (
 	examplesHash = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
-	shellUrl = "localhost:5001"
+	shellUrl     = "localhost:5001"
 )
 
 func TestAdd(t *testing.T) {
