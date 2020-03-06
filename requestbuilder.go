@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -88,7 +89,7 @@ func (r *RequestBuilder) Exec(ctx context.Context, res interface{}) error {
 		return err
 	}
 
-	if res == nil {
+	if isNil(res) {
 		lateErr := httpRes.Close()
 		if httpRes.Error != nil {
 			return httpRes.Error
@@ -97,4 +98,8 @@ func (r *RequestBuilder) Exec(ctx context.Context, res interface{}) error {
 	}
 
 	return httpRes.Decode(res)
+}
+
+func isNil(i interface{}) bool {
+	return i == nil || reflect.ValueOf(i).IsNil()
 }
