@@ -457,7 +457,7 @@ LOOP:
 			fmt.Printf("%#v\n", storage.Status)
 			c, err := s.StorageUploadGetContractBatch(sessionId, mhash, uts, storage.Status)
 			is.Nil(err)
-			_, err = s.StorageUploadSignBatch(sessionId, mhash, c, uts, storage.Status)
+			err = s.StorageUploadSignBatch(sessionId, mhash, c, uts, storage.Status)
 			// Note err is set to io.EOF when the btfs daemon returns nil from the endpoint
 			is.Nil(err)
 			fmt.Printf("%#v\n", storage.Status)
@@ -466,19 +466,19 @@ LOOP:
 			is.Nil(err)
 			switch unsigned.Opcode {
 			case "balance":
-				_, err = s.StorageUploadSignBalance(sessionId, mhash, unsigned, uts, storage.Status)
+				err = s.StorageUploadSignBalance(sessionId, mhash, unsigned, uts, storage.Status)
 				is.Nil(err)
 				fmt.Printf("%#v\n", storage.Status)
 			case "paychannel":
-				_, err = s.StorageUploadSignPayChannel(sessionId, mhash, unsigned, uts, storage.Status, unsigned.Price)
+				err = s.StorageUploadSignPayChannel(sessionId, mhash, unsigned, uts, storage.Status, unsigned.Price)
 				is.Nil(err)
 				fmt.Printf("%#v\n", storage.Status)
 			case "payrequest":
-				_, err = s.StorageUploadSignPayRequest(sessionId, mhash, unsigned, uts, storage.Status)
+				err = s.StorageUploadSignPayRequest(sessionId, mhash, unsigned, uts, storage.Status)
 				is.Nil(err)
 				fmt.Printf("%#v\n", storage.Status)
 			case "guard":
-				_, err = s.StorageUploadSignGuardFileMeta(sessionId, mhash, unsigned, uts, storage.Status)
+				err = s.StorageUploadSignGuardFileMeta(sessionId, mhash, unsigned, uts, storage.Status)
 				is.Nil(err)
 				fmt.Printf("%#v\n", storage.Status)
 			default:
