@@ -22,3 +22,5 @@ require (
 go 1.13
 
 replace github.com/libp2p/go-libp2p-core => github.com/TRON-US/go-libp2p-core v0.4.1
+
+replace github.com/tron-us/go-btfs-common => ../../go-btfs-common

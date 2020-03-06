@@ -19,8 +19,7 @@ import (
 
 const (
 	examplesHash = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
-	//shellUrl     = "10.10.0.57:5002"
-	shellUrl     = "127.0.0.1:5002"
+	shellUrl = "localhost:5001"
 )
 
 func TestAdd(t *testing.T) {
@@ -398,19 +397,18 @@ func randBytes(size int) []byte {
 
 func TestStorageUpload(t *testing.T) {
 	is := is.New(t)
+	err := utils.LoadApiConfig()
+	is.Nil(err)
+
 	s := NewShell(shellUrl)
 
-	//mhash, err := s.Add(bytes.NewBufferString("abcd 1234 efgh 567890 ijkl 9012"), Chunker("reed-solomon-1-1-256000"))
 	mhash, err := s.Add(bytes.NewBufferString(string(randBytes(15))), Chunker("reed-solomon-1-1-256000"))
 	is.Nil(err)
 
-	//sessionId, err := s.StorageUpload(mhash)
-	sessionId, err := s.StorageUpload(mhash, UploadMode("custom"),
-		Hosts(`16Uiu2HAmNh9xFhSj4g3GHF9dY7rWwhhnLnwt8nJ7yMs64gSKABR1,16Uiu2HAmNh9xFhSj4g3GHF9dY7rWwhhnLnwt8nJ7yMs64gSKABR1`))
-
+	sessionId, err := s.StorageUpload(mhash)
 	is.Nil(err)
 
-	var storage Storage
+	var storage *Storage
 LOOP:
 	for {
 		storage, err = s.StorageUploadStatus(sessionId)
@@ -427,24 +425,24 @@ LOOP:
 			continue
 		}
 	}
-	fmt.Printf("%#v\n", storage.Status)
+	fmt.Printf("Complete\n")
 }
 
 func TestStorageUploadWithOffSign(t *testing.T) {
 	is := is.New(t)
+	err := utils.LoadApiConfig()
+	is.Nil(err)
+
 	s := NewShell(shellUrl)
 
-	mhash, err := s.Add(bytes.NewBufferString("abcd 1234 efgh 567890 ijkl 9012"), Chunker("reed-solomon-1-1-256000"))
-	//mhash, err := s.Add(bytes.NewBufferString(string(randBytes(15))), OfflineSignMode(true), Chunker("reed-solomon-1-1-262144"))
+	mhash, err := s.Add(bytes.NewBufferString(string(randBytes(15))), Chunker("reed-solomon-1-1-256000"))
 	is.Nil(err)
 
 	uts := s.GetUts()
-	//sessionId, err := s.StorageUploadOffSign(mhash, uts, OfflineSignMode(true))
-	sessionId, err := s.StorageUploadOffSign(mhash, uts, UploadMode("custom"),
-		Hosts(`16Uiu2HAmNh9xFhSj4g3GHF9dY7rWwhhnLnwt8nJ7yMs64gSKABR1,16Uiu2HAmNh9xFhSj4g3GHF9dY7rWwhhnLnwt8nJ7yMs64gSKABR1`))
+	sessionId, err := s.StorageUploadOffSign(mhash, uts)
 	is.Nil(err)
 
-	var storage Storage
+	//var storage Storage
 LOOP:
 	for {
 		storage, err := s.StorageUploadStatus(sessionId)
@@ -470,15 +468,20 @@ LOOP:
 				_, err = s.StorageUploadSignBalance(sessionId, mhash, unsigned, uts, storage.Status)
 				// Note EOF returns when the daemon returns nil from the endpoint
 				// is.Nil(err)
+				fmt.Println(storage.Status)
 			case "paychannel":
-				_, err = s.StorageUploadSignPayChannel(sessionId, mhash, unsigned, uts, storage.Status, unsigned.Price)
+				_, err = s.
+					StorageUploadSignPayChannel(sessionId, mhash, unsigned, uts, storage.Status, unsigned.Price)
 				//is.Nil(err)
+				fmt.Println(storage.Status)
 			case "payrequest":
 				_, err = s.StorageUploadSignPayRequest(sessionId, mhash, unsigned, uts, storage.Status)
 				//is.Nil(err)
+				fmt.Println(storage.Status)
 			case "guard":
-				_, err = s.StorageUploadSignBalance(sessionId, mhash, unsigned, uts, storage.Status)
+				_, err = s.StorageUploadSignGuardFileMeta(sessionId, mhash, unsigned, uts, storage.Status)
 				//is.Nil(err)
+				fmt.Println(storage.Status)
 			default:
 				fmt.Printf("unexpected Opcode: %#v continue \n", unsigned.Opcode)
 			}
@@ -487,5 +490,5 @@ LOOP:
 		}
 		sleepMoment()
 	}
-	fmt.Printf("%#v\n", storage.Status)
+	fmt.Printf("Complete\n")
 }
