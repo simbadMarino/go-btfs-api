@@ -247,7 +247,7 @@ func (s *Shell) StorageUploadSignBatch(sid string, hash string, unsignedBatchCon
 
 	rb := s.Request("storage/upload/signcontractbatch", sid, utils.GetPeerId(), uts, offlinePeerSessionSignature,
 		sessionStatus, string(bytesSignBatch))
-	return out, rb.Exec(context.Background(), &out)
+	return out, rb.Exec(context.Background(), out)
 }
 
 // Storage upload sign offline data api.
@@ -289,7 +289,7 @@ func (s *Shell) StorageUploadSignBalance(id string, hash string, unsignedData *U
 		return nil, err
 	}
 	rb = s.Request("storage/upload/sign", id, utils.GetPeerId(), uts, offlinePeerSessionSignature, str, sessionStatus)
-	return out, rb.Exec(context.Background(), &out)
+	return out, rb.Exec(context.Background(), out)
 }
 
 func (s *Shell) StorageUploadSignPayChannel(id, hash string, unsignedData *UnsignedData, uts string, sessionStatus string, totalPrice int64) ([]byte, error) {
@@ -347,7 +347,7 @@ func (s *Shell) StorageUploadSignPayChannel(id, hash string, unsignedData *Unsig
 		return nil, err
 	}
 	rb = s.Request("storage/upload/sign", id, utils.GetPeerId(), uts, offlinePeerSessionSignature, signedChanCommitBytesStr, sessionStatus)
-	return out, rb.Exec(context.Background(), &out)
+	return out, rb.Exec(context.Background(), out)
 }
 
 func (s *Shell) StorageUploadSignPayRequest(id, hash string, unsignedData *UnsignedData,
@@ -406,7 +406,7 @@ func (s *Shell) StorageUploadSignPayRequest(id, hash string, unsignedData *Unsig
 		return nil, err
 	}
 	rb = s.Request("storage/upload/sign", id, utils.GetPeerId(), uts, offlinePeerSessionSignature, str, sessionStatus)
-	return out, rb.Exec(context.Background(), &out)
+	return out, rb.Exec(context.Background(), out)
 }
 
 func (s *Shell) StorageUploadSignGuardFileMeta(id, hash string, unsignedData *UnsignedData,
@@ -439,5 +439,5 @@ func (s *Shell) StorageUploadSignGuardFileMeta(id, hash string, unsignedData *Un
 		return nil, err
 	}
 	rb = s.Request("storage/upload/sign", id, utils.GetPeerId(), uts, offlinePeerSessionSignature, str, sessionStatus)
-	return out, rb.Exec(context.Background(), &out)
+	return out, rb.Exec(context.Background(), out)
 }

@@ -437,7 +437,9 @@ func TestStorageUploadWithOffSign(t *testing.T) {
 	is.Nil(err)
 
 	uts := s.GetUts()
-	sessionId, err := s.StorageUploadOffSign(mhash, uts)
+	//sessionId, err := s.StorageUploadOffSign(mhash, uts)
+	sessionId, err := s.StorageUploadOffSign(mhash, uts, UploadMode("custom"),
+		Hosts(`16Uiu2HAmJk2N7Fqa7CFSMxu6DS3taGVtH4dWkLxxZZuoLuwbSAjc,16Uiu2HAmJk2N7Fqa7CFSMxu6DS3taGVtH4dWkLxxZZuoLuwbSAjc`))
 	is.Nil(err)
 
 	//var storage Storage
@@ -457,7 +459,7 @@ LOOP:
 			is.Nil(err)
 			_, err = s.StorageUploadSignBatch(sessionId, mhash, c, uts, storage.Status)
 			// Note err is set to io.EOF when the btfs daemon returns nil from the endpoint
-			is.Equal(err, io.EOF)
+			is.Nil(err)
 			fmt.Printf("%#v\n", storage.Status)
 		case "balanceSignReady", "payChannelSignReady", "payRequestSignReady", "guardSignReady":
 			unsigned, err := s.StorageUploadGetUnsignedData(sessionId, mhash, uts, storage.Status)
@@ -465,21 +467,20 @@ LOOP:
 			switch unsigned.Opcode {
 			case "balance":
 				_, err = s.StorageUploadSignBalance(sessionId, mhash, unsigned, uts, storage.Status)
-				is.Equal(err, io.EOF)
-				fmt.Println(storage.Status)
+				is.Nil(err)
+				fmt.Printf("%#v\n", storage.Status)
 			case "paychannel":
-				_, err = s.
-					StorageUploadSignPayChannel(sessionId, mhash, unsigned, uts, storage.Status, unsigned.Price)
-				is.Equal(err, io.EOF)
-				fmt.Println(storage.Status)
+				_, err = s.StorageUploadSignPayChannel(sessionId, mhash, unsigned, uts, storage.Status, unsigned.Price)
+				is.Nil(err)
+				fmt.Printf("%#v\n", storage.Status)
 			case "payrequest":
 				_, err = s.StorageUploadSignPayRequest(sessionId, mhash, unsigned, uts, storage.Status)
-				is.Equal(err, io.EOF)
-				fmt.Println(storage.Status)
+				is.Nil(err)
+				fmt.Printf("%#v\n", storage.Status)
 			case "guard":
 				_, err = s.StorageUploadSignGuardFileMeta(sessionId, mhash, unsigned, uts, storage.Status)
-				is.Equal(err, io.EOF)
-				fmt.Println(storage.Status)
+				is.Nil(err)
+				fmt.Printf("%#v\n", storage.Status)
 			default:
 				fmt.Printf("unexpected Opcode: %#v continue \n", unsigned.Opcode)
 			}
