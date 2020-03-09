@@ -107,12 +107,30 @@ func (s *Shell) AddDir(dir string) (string, error) {
 	slf := files.NewSliceDirectory([]files.DirEntry{files.FileEntry(path.Base(dir), sf)})
 	reader := files.NewMultiFileReader(slf, true)
 
+	return s.addDirectoryFromReader(reader)
+}
+
+func  (s *Shell) AddSerialFileDir(dir string) (string, error) {
+	return s.AddDir(dir)
+}
+
+func  (s *Shell) AddSlicedDirectory(dir files.Directory) (string, error) {
+	reader := files.NewMultiFileReader(dir, true)
+	return s.addDirectoryFromReader(reader)
+}
+
+func  (s *Shell) AddMultiPartFileDir(dir files.Directory) (string, error) {
+	reader := files.NewMultiFileReader(dir, true)
+	return s.addDirectoryFromReader(reader)
+}
+
+func (s *Shell) addDirectoryFromReader(dirReader *files.MultiFileReader) (string, error) {
 	resp, err := s.Request("add").
 		Option("recursive", true).
-		Body(reader).
+		Body(dirReader).
 		Send(context.Background())
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	defer resp.Close()

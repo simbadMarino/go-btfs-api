@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/md5"
 	"fmt"
+	files "github.com/ipfs/go-ipfs-files"
 	"io"
 	"sort"
 	"strings"
@@ -19,7 +20,8 @@ import (
 
 const (
 	examplesHash = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
-	shellUrl     = "localhost:5001"
+	//shellUrl     = "localhost:5001"
+	shellUrl     = "10.10.0.57:5001"
 )
 
 func TestAdd(t *testing.T) {
@@ -105,12 +107,67 @@ func TestAddNoPinDeprecated(t *testing.T) {
 }
 
 func TestAddDir(t *testing.T) {
+	TestAddSerialFileDir(t)
+}
+
+func TestAddSerialFileDir(t *testing.T) {
 	is := is.New(t)
 	s := NewShell(shellUrl)
 
 	cid, err := s.AddDir("./testdata")
 	is.Nil(err)
 	is.Equal(cid, "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv")
+}
+
+func TestAddSlicedDir(t *testing.T) {
+	is := is.New(t)
+	s := NewShell(shellUrl)
+
+	cid, err := s.AddSlicedDirectory(oneLevelSlicedDirectory())
+	is.Nil(err)
+	is.Equal(cid, "QmTu73SNc8z52fRmuv2WWL9e4DSTVFrpddd7JcKNRqQjdK")
+}
+
+func TestAddTwoLevelSlicedDir(t *testing.T) {
+	is := is.New(t)
+	s := NewShell(shellUrl)
+
+	cid, err := s.AddSlicedDirectory(twoLevelSlicedDirectory())
+	is.Nil(err)
+	is.Equal(cid, "QmRaXq2f56raFQrNbxEkt3sEGAn9coiE8urdUAjb6uCDN3")
+}
+
+func TestAddMultiPartFileDir(t *testing.T) {
+	is := is.New(t)
+	s := NewShell(shellUrl)
+
+	cid, err := s.AddMultiPartFileDir(oneLevelSlicedDirectory())
+	is.Nil(err)
+	is.Equal(cid, "QmTu73SNc8z52fRmuv2WWL9e4DSTVFrpddd7JcKNRqQjdK")
+}
+
+func oneLevelSlicedDirectory() files.Directory {
+	return files.NewMapDirectory(map[string]files.Node{
+		"dir": files.NewMapDirectory(map[string]files.Node{
+			"file1.txt": files.NewBytesFile([]byte("file one contents")),
+			"file2.txt": files.NewBytesFile([]byte("hello, file two")),
+			"file3.txt": files.NewBytesFile([]byte("file three contents")),
+		}),
+	})
+}
+
+func twoLevelSlicedDirectory() files.Directory {
+	return files.NewMapDirectory(map[string]files.Node{
+		"dir": files.NewMapDirectory(map[string]files.Node{
+			"file1.txt": files.NewBytesFile([]byte("file1 contents")),
+			"dir2": files.NewMapDirectory(map[string]files.Node{
+				"file21.txt": files.NewBytesFile([]byte("file2 contents")),
+				"dir22": files.NewMapDirectory(map[string]files.Node{
+					"file221.txt": files.NewBytesFile([]byte("file3 contents")),
+				}),
+			}),
+		}),
+	})
 }
 
 func TestLocalShell(t *testing.T) {
