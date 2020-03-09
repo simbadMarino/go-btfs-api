@@ -392,8 +392,7 @@ func randBytes(is is.I, size int) []byte {
 	is.Nil(err)
 	return b
 }
-
-func TestStorageUpload(t *testing.T) {
+func TestStorageUploadWithOnSign(t *testing.T) {
 	is := is.New(t)
 	err := utils.LoadApiConfig()
 	is.Nil(err)
@@ -437,9 +436,7 @@ func TestStorageUploadWithOffSign(t *testing.T) {
 	is.Nil(err)
 
 	uts := s.GetUts()
-	//sessionId, err := s.StorageUploadOffSign(mhash, uts)
-	sessionId, err := s.StorageUploadOffSign(mhash, uts, UploadMode("custom"),
-		Hosts(`16Uiu2HAmJk2N7Fqa7CFSMxu6DS3taGVtH4dWkLxxZZuoLuwbSAjc,16Uiu2HAmJk2N7Fqa7CFSMxu6DS3taGVtH4dWkLxxZZuoLuwbSAjc`))
+	sessionId, err := s.StorageUploadOffSign(mhash, uts)
 	is.Nil(err)
 
 	//var storage Storage
