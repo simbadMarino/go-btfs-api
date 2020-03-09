@@ -20,8 +20,7 @@ import (
 
 const (
 	examplesHash = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
-	//shellUrl     = "localhost:5001"
-	shellUrl     = "10.10.0.57:5001"
+	shellUrl     = "localhost:5001"
 )
 
 func TestAdd(t *testing.T) {
@@ -114,36 +113,45 @@ func TestAddSerialFileDir(t *testing.T) {
 	is := is.New(t)
 	s := NewShell(shellUrl)
 
-	cid, err := s.AddDir("./testdata")
+	cid, err := s.AddSerialFileDir("./testdata", false)
 	is.Nil(err)
 	is.Equal(cid, "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv")
 }
 
-func TestAddSlicedDir(t *testing.T) {
+func TestAddSerialFileDirReedSolomon(t *testing.T) {
 	is := is.New(t)
 	s := NewShell(shellUrl)
 
-	cid, err := s.AddSlicedDirectory(oneLevelSlicedDirectory())
+	cid, err := s.AddSerialFileDir("./testdata", true)
 	is.Nil(err)
-	is.Equal(cid, "QmTu73SNc8z52fRmuv2WWL9e4DSTVFrpddd7JcKNRqQjdK")
+	is.Equal(cid, "QmSMcapT6NhpUd6ijiECMvvFE1HgeCVGpyBDK5v59J34o8")
 }
 
-func TestAddTwoLevelSlicedDir(t *testing.T) {
+func TestAddSlicedDirReedSolomon(t *testing.T) {
 	is := is.New(t)
 	s := NewShell(shellUrl)
 
-	cid, err := s.AddSlicedDirectory(twoLevelSlicedDirectory())
+	cid, err := s.AddSlicedDirectory(oneLevelSlicedDirectory(), true)
 	is.Nil(err)
-	is.Equal(cid, "QmRaXq2f56raFQrNbxEkt3sEGAn9coiE8urdUAjb6uCDN3")
+	is.Equal(cid, "QmR8SZyh6unyeW8FfdgPpv3tnndS1VPvyjSoF1nRkfDrCP")
 }
 
-func TestAddMultiPartFileDir(t *testing.T) {
+func TestAddTwoLevelSlicedDirReedSolomon(t *testing.T) {
 	is := is.New(t)
 	s := NewShell(shellUrl)
 
-	cid, err := s.AddMultiPartFileDir(oneLevelSlicedDirectory())
+	cid, err := s.AddSlicedDirectory(twoLevelSlicedDirectory(), true)
 	is.Nil(err)
-	is.Equal(cid, "QmTu73SNc8z52fRmuv2WWL9e4DSTVFrpddd7JcKNRqQjdK")
+	is.Equal(cid, "QmVrbpHugkDxHrqsSjeeuAWKnJ3Md7F37S91ko7xDJWhxn")
+}
+
+func TestAddMultiPartFileDirReedSolomon(t *testing.T) {
+	is := is.New(t)
+	s := NewShell(shellUrl)
+
+	cid, err := s.AddMultiPartFileDir(oneLevelSlicedDirectory(), true)
+	is.Nil(err)
+	is.Equal(cid, "QmR8SZyh6unyeW8FfdgPpv3tnndS1VPvyjSoF1nRkfDrCP")
 }
 
 func oneLevelSlicedDirectory() files.Directory {
