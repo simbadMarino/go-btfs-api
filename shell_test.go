@@ -15,6 +15,7 @@ import (
 	"github.com/TRON-US/go-btfs-api/utils"
 	"github.com/cheekybits/is"
 	u "github.com/ipfs/go-ipfs-util"
+	files "github.com/TRON-US/go-btfs-files"
 )
 
 const (
@@ -105,12 +106,76 @@ func TestAddNoPinDeprecated(t *testing.T) {
 }
 
 func TestAddDir(t *testing.T) {
+	TestAddSerialFileDir(t)
+}
+
+func TestAddSerialFileDir(t *testing.T) {
 	is := is.New(t)
 	s := NewShell(shellUrl)
 
-	cid, err := s.AddDir("./testdata")
+	cid, err := s.AddSerialFileDir("./testdata", false)
 	is.Nil(err)
 	is.Equal(cid, "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv")
+}
+
+func TestAddSerialFileDirReedSolomon(t *testing.T) {
+	is := is.New(t)
+	s := NewShell(shellUrl)
+
+	cid, err := s.AddSerialFileDir("./testdata", true)
+	is.Nil(err)
+	is.Equal(cid, "QmSMcapT6NhpUd6ijiECMvvFE1HgeCVGpyBDK5v59J34o8")
+}
+
+func TestAddSlicedDirReedSolomon(t *testing.T) {
+	is := is.New(t)
+	s := NewShell(shellUrl)
+
+	cid, err := s.AddSlicedDirectory(oneLevelSlicedDirectory(), true)
+	is.Nil(err)
+	is.Equal(cid, "QmR8SZyh6unyeW8FfdgPpv3tnndS1VPvyjSoF1nRkfDrCP")
+}
+
+func TestAddTwoLevelSlicedDirReedSolomon(t *testing.T) {
+	is := is.New(t)
+	s := NewShell(shellUrl)
+
+	cid, err := s.AddSlicedDirectory(twoLevelSlicedDirectory(), true)
+	is.Nil(err)
+	is.Equal(cid, "QmVrbpHugkDxHrqsSjeeuAWKnJ3Md7F37S91ko7xDJWhxn")
+}
+
+func TestAddMultiPartFileDirReedSolomon(t *testing.T) {
+	is := is.New(t)
+	s := NewShell(shellUrl)
+
+	cid, err := s.AddMultiPartFileDir(oneLevelSlicedDirectory(), true)
+	is.Nil(err)
+	is.Equal(cid, "QmR8SZyh6unyeW8FfdgPpv3tnndS1VPvyjSoF1nRkfDrCP")
+}
+
+func oneLevelSlicedDirectory() files.Directory {
+	return files.NewMapDirectory(map[string]files.Node{
+		"dir": files.NewMapDirectory(map[string]files.Node{
+			"file1.txt": files.NewBytesFile([]byte("file one contents")),
+			"file2.txt": files.NewBytesFile([]byte("hello, file two")),
+			"file3.txt": files.NewBytesFile([]byte("file three contents")),
+		}),
+	})
+}
+
+func twoLevelSlicedDirectory() files.Directory {
+	return files.NewMapDirectory(map[string]files.Node{
+		"dir": files.NewMapDirectory(map[string]files.Node{
+			"file1.txt": files.NewBytesFile([]byte("file1 contents")),
+			"dir2": files.NewMapDirectory(map[string]files.Node{
+				"file21.txt": files.NewBytesFile([]byte("file2 contents")),
+				"dir22": files.NewMapDirectory(map[string]files.Node{
+					"file221.txt": files.NewBytesFile([]byte("file3 contents")),
+				}),
+			}),
+		}),
+	})
 }
 
 func TestLocalShell(t *testing.T) {

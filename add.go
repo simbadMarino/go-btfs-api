@@ -8,7 +8,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/ipfs/go-ipfs-files"
+	"github.com/TRON-US/go-btfs-files"
 )
 
 type object struct {
@@ -93,8 +93,12 @@ func (s *Shell) AddLink(target string) (string, error) {
 	return out.Hash, s.Request("add").Body(reader).Exec(context.Background(), &out)
 }
 
-// AddDir adds a directory recursively with all of the files under it
 func (s *Shell) AddDir(dir string) (string, error) {
+	return s.AddSerialFileDir(dir, false)
+}
+
+// AddDir adds a directory recursively with all of the files under it
+func (s *Shell) AddSerialFileDir(dir string, reedSolomon bool) (string, error) {
 	stat, err := os.Lstat(dir)
 	if err != nil {
 		return "", err
@@ -107,12 +111,30 @@ func (s *Shell) AddDir(dir string) (string, error) {
 	slf := files.NewSliceDirectory([]files.DirEntry{files.FileEntry(path.Base(dir), sf)})
 	reader := files.NewMultiFileReader(slf, true)
 
-	resp, err := s.Request("add").
-		Option("recursive", true).
-		Body(reader).
+	return s.addDirectoryFromReader(reader, reedSolomon)
+}
+
+func (s *Shell) AddSlicedDirectory(dir files.Directory, reedSolomon bool) (string, error) {
+	reader := files.NewMultiFileReader(dir, true)
+	return s.addDirectoryFromReader(reader, reedSolomon)
+}
+
+func (s *Shell) AddMultiPartFileDir(dir files.Directory, reedSolomon bool) (string, error) {
+	reader := files.NewMultiFileReader(dir, true)
+	return s.addDirectoryFromReader(reader, reedSolomon)
+}
+
+func (s *Shell) addDirectoryFromReader(dirReader *files.MultiFileReader, reedSolomon bool) (string, error) {
+	request := s.Request("add").
+		Option("recursive", true)
+	if reedSolomon {
+		request.Option("chunker", "reed-solomon")
+	}
+	resp, err := request.
+		Body(dirReader).
 		Send(context.Background())
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	defer resp.Close()
