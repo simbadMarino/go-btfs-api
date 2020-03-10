@@ -8,7 +8,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/ipfs/go-ipfs-files"
+	"github.com/TRON-US/go-btfs-files"
 )
 
 type object struct {

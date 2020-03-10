@@ -12,7 +12,7 @@ import (
 	"os"
 	"strings"
 
-	files "github.com/ipfs/go-ipfs-files"
+	files "github.com/TRON-US/go-btfs-files"
 )
 
 const (

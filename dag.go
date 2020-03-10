@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/TRON-US/go-btfs-api/options"
-	"github.com/ipfs/go-ipfs-files"
+	"github.com/TRON-US/go-btfs-files"
 )
 
 func (s *Shell) DagGet(ref string, out interface{}) error {
