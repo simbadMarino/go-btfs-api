@@ -2,7 +2,9 @@ package shell
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/libp2p/go-libp2p-core/peer"
 	"strconv"
 	"time"
 
@@ -166,11 +168,61 @@ func (s *Shell) GetUts() string {
 	return strconv.FormatInt(time.Now().Unix(), 10)
 }
 
-func getSessionSignature(hash string, peerId string) (string, time.Time, error) {
-	//offline session signature
-	now := time.Now()
-	sessionSignature := fmt.Sprintf("%s:%s:%s", utils.GetPeerId(), hash, "time.Now().String()")
-	return sessionSignature, now, nil
+func NewSessionSignature(hash string, peerIdStr string, uts string, verifyBefore bool) (string, error) {
+	// Create offline session signature input data
+	inputDataStr := fmt.Sprintf("%s%s%s", hash, peerIdStr, uts)
+
+	// Sign sessionSignature
+	privKey, _ := crypto.ToPrivKey(utils.GetPrivateKey())
+	sig, err := privKey.Sign([]byte(inputDataStr))
+	if err != nil {
+		return "", err
+	}
+
+	sigStr, err := cutils.BytesToString(sig, cutils.Base64)
+	if err != nil {
+		return "", err
+	}
+	utils.SetSessionSignature(sigStr)
+
+	peerId, err := peer.IDB58Decode(utils.GetPeerId())
+	if err != nil {
+		return "", err
+	}
+
+	if verifyBefore {
+		err = VerifySessionSignature(peerId, inputDataStr, sigStr)
+		if err != nil {
+			return "", errors.New("session signature verification failed")
+		}
+	}
+
+	return sigStr, nil
+}
+
+func VerifySessionSignature(offSignRenterPid peer.ID, data string, sessionSigStr string) error {
+	// get renter's public key
+	pubKey, err := offSignRenterPid.ExtractPublicKey()
+	if err != nil {
+		return err
+	}
+
+	sigBytes, err := cutils.StringToBytes(sessionSigStr, cutils.Base64)
+	if err != nil {
+		return err
+	}
+	ok, err := pubKey.Verify([]byte(data), sigBytes)
+	if !ok || err != nil {
+		return fmt.Errorf("can't verify session signature: %v", err)
+	}
+	return nil
+}
+
+func getSessionSignature() (string, error) {
+	if utils.ApiConfig.SessionSignature == "" {
+		return "", errors.New("API session signature is not yet created. NewSessionSignature() should be called.")
+	}
+	return utils.GetSessionSignature(), nil
 }
 
 // Storage upload api.
@@ -186,7 +238,7 @@ func (s *Shell) StorageUpload(hash string, options ...StorageUploadOpts) (string
 // Storage upload api.
 func (s *Shell) StorageUploadOffSign(hash string, uts string, options ...StorageUploadOpts) (string, error) {
 	var out storageUploadResponse
-	offlinePeerSessionSignature, _, err := getSessionSignature(hash, utils.GetPeerId())
+	offlinePeerSessionSignature, err := NewSessionSignature(hash, utils.GetPeerId(), uts, false)
 	if err != nil {
 		return "", err
 	}
@@ -207,7 +259,7 @@ func (s *Shell) StorageUploadStatus(id string) (*Storage, error) {
 // Storage upload get offline contract batch api.
 func (s *Shell) StorageUploadGetContractBatch(sid string, hash string, uts string, sessionStatus string) (*Contracts, error) {
 	var out Contracts
-	offlinePeerSessionSignature, _, err := getSessionSignature(hash, utils.GetPeerId())
+	offlinePeerSessionSignature, err := getSessionSignature()
 	if err != nil {
 		return nil, err
 	}
@@ -218,7 +270,7 @@ func (s *Shell) StorageUploadGetContractBatch(sid string, hash string, uts strin
 // Storage upload get offline unsigned data api.
 func (s *Shell) StorageUploadGetUnsignedData(sid string, hash string, uts string, sessionStatus string) (*UnsignedData, error) {
 	var out UnsignedData
-	offlinePeerSessionSignature, _, err := getSessionSignature(hash, utils.GetPeerId())
+	offlinePeerSessionSignature, err := getSessionSignature()
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +282,7 @@ func (s *Shell) StorageUploadGetUnsignedData(sid string, hash string, uts string
 func (s *Shell) StorageUploadSignBatch(sid string, hash string, unsignedBatchContracts *Contracts, uts string, sessionStatus string) error {
 	var signedBatchContracts *Contracts
 	var errSign error
-	offlinePeerSessionSignature, _, err := getSessionSignature(hash, utils.GetPeerId())
+	offlinePeerSessionSignature, err := getSessionSignature()
 	if err != nil {
 		return err
 	}
@@ -253,7 +305,7 @@ func (s *Shell) StorageUploadSignBatch(sid string, hash string, unsignedBatchCon
 func (s *Shell) StorageUploadSign(id string, hash string, unsignedData *UnsignedData, uts string, sessionStatus string) ([]byte, error) {
 	var out []byte
 	var rb *RequestBuilder
-	offlinePeerSessionSignature, _, err := getSessionSignature(hash, utils.GetPeerId())
+	offlinePeerSessionSignature, err := getSessionSignature()
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +321,7 @@ func (s *Shell) StorageUploadSignBalance(id string, hash string, unsignedData *U
 	uts string, sessionStatus string) error {
 	var rb *RequestBuilder
 
-	offlinePeerSessionSignature, _, err := getSessionSignature(hash, utils.GetPeerId())
+	offlinePeerSessionSignature, err := getSessionSignature()
 	if err != nil {
 		return err
 	}
@@ -292,7 +344,7 @@ func (s *Shell) StorageUploadSignBalance(id string, hash string, unsignedData *U
 
 func (s *Shell) StorageUploadSignPayChannel(id, hash string, unsignedData *UnsignedData, uts string, sessionStatus string, totalPrice int64) error {
 	var rb *RequestBuilder
-	offlinePeerSessionSignature, now, err := getSessionSignature(hash, utils.GetPeerId())
+	offlinePeerSessionSignature, err := getSessionSignature()
 	if err != nil {
 		return err
 	}
@@ -321,7 +373,7 @@ func (s *Shell) StorageUploadSignPayChannel(id, hash string, unsignedData *Unsig
 		Payer:     &ledgerpb.PublicKey{Key: fromAddr},
 		Recipient: &ledgerpb.PublicKey{Key: toAddr},
 		Amount:    totalPrice,
-		PayerId:   now.UnixNano(),
+		PayerId:   time.Now().UnixNano(),
 	}
 	buyerPrivKey, err := crypto.ToPrivKey(utils.GetPrivateKey())
 	if err != nil {
@@ -351,7 +403,7 @@ func (s *Shell) StorageUploadSignPayRequest(id, hash string, unsignedData *Unsig
 	uts string, sessionStatus string) error {
 	var rb *RequestBuilder
 
-	offlinePeerSessionSignature, _, err := getSessionSignature(hash, utils.GetPeerId())
+	offlinePeerSessionSignature, err := getSessionSignature()
 	if err != nil {
 		return err
 	}
@@ -409,7 +461,7 @@ func (s *Shell) StorageUploadSignGuardFileMeta(id, hash string, unsignedData *Un
 	uts string, sessionStatus string) error {
 	var rb *RequestBuilder
 
-	offlinePeerSessionSignature, _, err := getSessionSignature(hash, utils.GetPeerId())
+	offlinePeerSessionSignature, err := getSessionSignature()
 	if err != nil {
 		return err
 	}

@@ -14,9 +14,10 @@ import (
 )
 
 type ApiConfigStruct struct {
-	PrivateKey string
-	PeerId     string
-	PublicKey  string
+	PrivateKey       string
+	PeerId           string
+	PublicKey        string
+	SessionSignature string
 }
 
 const (
@@ -131,4 +132,12 @@ func GetPublicKey() string {
 
 func GetPeerId() string {
 	return ApiConfig.PeerId
+}
+
+func GetSessionSignature() string {
+	return ApiConfig.SessionSignature
+}
+
+func SetSessionSignature(sessionSig string) {
+	ApiConfig.SessionSignature = sessionSig
 }
