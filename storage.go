@@ -173,7 +173,11 @@ func NewSessionSignature(hash string, peerIdStr string, uts string, verifyBefore
 	inputDataStr := fmt.Sprintf("%s%s%s", hash, peerIdStr, uts)
 
 	// Sign sessionSignature
-	privKey, _ := crypto.ToPrivKey(utils.GetPrivateKey())
+	privKey, err := crypto.ToPrivKey(utils.GetPrivateKey())
+	if err != nil {
+		return "", err
+	}
+
 	sig, err := privKey.Sign([]byte(inputDataStr))
 	if err != nil {
 		return "", err
@@ -193,7 +197,7 @@ func NewSessionSignature(hash string, peerIdStr string, uts string, verifyBefore
 	if verifyBefore {
 		err = VerifySessionSignature(peerId, inputDataStr, sigStr)
 		if err != nil {
-			return "", errors.New("session signature verification failed")
+			return "", err
 		}
 	}
 
