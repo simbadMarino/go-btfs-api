@@ -13,9 +13,9 @@ import (
 
 	"github.com/TRON-US/go-btfs-api/options"
 	"github.com/TRON-US/go-btfs-api/utils"
+	files "github.com/TRON-US/go-btfs-files"
 	"github.com/cheekybits/is"
 	u "github.com/ipfs/go-ipfs-util"
-	files "github.com/TRON-US/go-btfs-files"
 )
 
 const (
