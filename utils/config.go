@@ -8,7 +8,6 @@ import (
 	"github.com/mitchellh/go-homedir"
 	_ "github.com/mitchellh/go-homedir"
 	"github.com/tron-us/go-btfs-common/crypto"
-	"github.com/tron-us/go-common/v2/env"
 	"os"
 	"path/filepath"
 )
@@ -32,17 +31,9 @@ const (
 var ApiConfig ApiConfigStruct
 
 func init() {
-	//get variables via environment variable
-	if _, s := env.GetEnv("PRIVATE_KEY"); s != "" {
-		ApiConfig.PrivateKey = s
-	}
-
-	if _, s := env.GetEnv("PEER_ID"); s != "" {
-		ApiConfig.PeerId = s
-	}
-	if _, s := env.GetEnv("PUBLIC_KEY"); s != "" {
-		ApiConfig.PublicKey = s
-	}
+	ApiConfig.PrivateKey = "CAISID3cjZrDs888SnmZ8SqckeuMFWsv/zp74DxHsAQv1FWM"
+	ApiConfig.PeerId = "16Uiu2HAm7thbsmvGPKwXRxTJjHHmp6XRHaiQHNScRwCfrcSr8aPg"
+	ApiConfig.PublicKey = "CAISIQK5OMJT9A/lXl+97/4Ec5CD2H+Y+hpg/SXSKtXuuOlTzw=="
 }
 
 // Precondition: Call This function when any of the member variables of the

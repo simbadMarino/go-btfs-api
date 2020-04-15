@@ -515,12 +515,29 @@ LOOP:
 		case "error":
 			fmt.Printf("%#v, %#v\n", storage.Status, storage.Message)
 			t.Fatal(fmt.Errorf("%s", storage.Message))
-		case "initSignReadyEscrow", "initSignReadyGuard":
+		case "init":
 			fmt.Printf("%#v\n", storage.Status)
-			c, err := s.StorageUploadGetContractBatch(sessionId, mhash, uts, storage.Status)
+			e := 0
+			var ec *Contracts
+			for e == 0 {
+				time.Sleep(5 * time.Second)
+				fmt.Println("try get contract batch...")
+				ec, err = s.StorageUploadGetContractBatch(sessionId, uts, "escrow")
+				is.Nil(err)
+				e = len(ec.Contracts)
+			}
+			g := 0
+			var gc *Contracts
+			for g == 0 {
+				time.Sleep(5 * time.Second)
+				fmt.Println("try get contract batch...")
+				gc, err = s.StorageUploadGetContractBatch(sessionId, uts, "guard")
+				is.Nil(err)
+				g = len(gc.Contracts)
+			}
+			err = s.StorageUploadSignBatch(sessionId, ec, uts, "escrow")
 			is.Nil(err)
-			err = s.StorageUploadSignBatch(sessionId, mhash, c, uts, storage.Status)
-			// Note err is set to io.EOF when the btfs daemon returns nil from the endpoint
+			err = s.StorageUploadSignBatch(sessionId, gc, uts, "guard")
 			is.Nil(err)
 			fmt.Printf("%#v\n", storage.Status)
 		case "balanceSignReady", "payChannelSignReady", "payRequestSignReady", "guardSignReady":
