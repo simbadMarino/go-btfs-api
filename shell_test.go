@@ -507,66 +507,53 @@ func TestStorageUploadWithOffSign(t *testing.T) {
 	//var storage Storage
 LOOP:
 	for {
+		sleepMoment()
 		storage, err := s.StorageUploadStatus(sessionId)
 		is.Nil(err)
 		switch storage.Status {
 		case "complete":
 			break LOOP
 		case "error":
-			fmt.Printf("%#v, %#v\n", storage.Status, storage.Message)
 			t.Fatal(fmt.Errorf("%s", storage.Message))
 		case "init":
-			fmt.Printf("%#v\n", storage.Status)
-			e := 0
-			var ec *Contracts
-			for e == 0 {
-				time.Sleep(5 * time.Second)
-				fmt.Println("try get contract batch...")
-				ec, err = s.StorageUploadGetContractBatch(sessionId, uts, "escrow")
-				is.Nil(err)
-				e = len(ec.Contracts)
+			ec, err := s.StorageUploadGetContractBatch(sessionId, uts, "escrow")
+			is.Nil(err)
+			if len(ec.Contracts) == 0 {
+				continue
 			}
-			g := 0
-			var gc *Contracts
-			for g == 0 {
-				time.Sleep(5 * time.Second)
-				fmt.Println("try get contract batch...")
-				gc, err = s.StorageUploadGetContractBatch(sessionId, uts, "guard")
-				is.Nil(err)
-				g = len(gc.Contracts)
+			gc, err := s.StorageUploadGetContractBatch(sessionId, uts, "guard")
+			is.Nil(err)
+			if len(gc.Contracts) == 0 {
+				continue
 			}
 			err = s.StorageUploadSignBatch(sessionId, ec, uts, "escrow")
 			is.Nil(err)
 			err = s.StorageUploadSignBatch(sessionId, gc, uts, "guard")
 			is.Nil(err)
 			fmt.Printf("%#v\n", storage.Status)
-		case "balanceSignReady", "payChannelSignReady", "payRequestSignReady", "guardSignReady":
-			unsigned, err := s.StorageUploadGetUnsignedData(sessionId, mhash, uts, storage.Status)
+		case "submit", "submit:check-balance-req-singed", "pay", "pay:payin-req-signed", "guard", "wait-upload":
+			unsigned, err := s.StorageUploadGetUnsignedData(sessionId, uts, storage.Status)
 			is.Nil(err)
-			switch unsigned.Opcode {
-			case "balance":
-				err = s.StorageUploadSignBalance(sessionId, mhash, unsigned, uts, storage.Status)
-				is.Nil(err)
-				fmt.Printf("%#v\n", storage.Status)
-			case "paychannel":
-				err = s.StorageUploadSignPayChannel(sessionId, mhash, unsigned, uts, storage.Status, unsigned.Price)
-				is.Nil(err)
-				fmt.Printf("%#v\n", storage.Status)
-			case "payrequest":
-				err = s.StorageUploadSignPayRequest(sessionId, mhash, unsigned, uts, storage.Status)
-				is.Nil(err)
-				fmt.Printf("%#v\n", storage.Status)
+			switch storage.Status {
+			case "submit":
+				err = s.StorageUploadSignBalance(sessionId, unsigned, uts, storage.Status)
+			case "submit:check-balance-req-singed":
+				err = s.StorageUploadSignPayChannel(sessionId, unsigned, uts, storage.Status, unsigned.Price)
+			case "pay":
+				err = s.StorageUploadSignPayRequest(sessionId, unsigned, uts, storage.Status)
+			case "pay:payin-req-signed":
+				err = s.StorageUploadSignGuardFileMeta(sessionId, unsigned, uts, storage.Status)
 			case "guard":
-				err = s.StorageUploadSignGuardFileMeta(sessionId, mhash, unsigned, uts, storage.Status)
-				is.Nil(err)
-				fmt.Printf("%#v\n", storage.Status)
+				err = s.StorageUploadSignGuardFileMeta(sessionId, unsigned, uts, storage.Status)
+			case "wait-upload":
+				err = s.StorageUploadSignWaitupload(sessionId, unsigned, uts, storage.Status)
 			default:
-				fmt.Printf("unexpected Opcode: %#v continue \n", unsigned.Opcode)
 			}
+			is.Nil(err)
+			fmt.Printf("%#v\n", storage.Status)
 		default:
 			fmt.Printf("%#v continue \n", storage.Status)
 		}
-		sleepMoment()
 	}
 	fmt.Printf("Complete\n")
 }
