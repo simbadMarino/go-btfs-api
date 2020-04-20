@@ -464,7 +464,7 @@ func TestStorageUploadWithOnSign(t *testing.T) {
 
 	s := NewShell(shellUrl)
 
-	mhash, err := s.Add(bytes.NewBufferString(string(randBytes(is, 15))), Chunker("reed-solomon-1-1-256000"))
+	mhash, err := s.Add(bytes.NewBufferString(string(randBytes(is, 150))), Chunker("reed-solomon"))
 	is.Nil(err)
 
 	sessionId, err := s.StorageUpload(mhash)
@@ -497,7 +497,7 @@ func TestStorageUploadWithOffSign(t *testing.T) {
 
 	s := NewShell(shellUrl)
 
-	mhash, err := s.Add(bytes.NewBufferString(string(randBytes(is, 15))), Chunker("reed-solomon-1-1-256000"))
+	mhash, err := s.Add(bytes.NewBufferString(string(randBytes(is, 150))), Chunker("reed-solomon"))
 	is.Nil(err)
 
 	uts := s.GetUts()
