@@ -500,6 +500,45 @@ func (s *Shell) StorageUploadSignGuardFileMeta(id string, unsignedData *Unsigned
 	return rb.Exec(context.Background(), nil)
 }
 
+func (s *Shell) StorageUploadSignGuardQuestions(id string, unsignedData *UnsignedData,
+	uts string, sessionStatus string) error {
+	var rb *RequestBuilder
+
+	offlinePeerSessionSignature, err := getSessionSignature()
+	if err != nil {
+		return err
+	}
+	unsignedBytes, err := cutils.StringToBytes(unsignedData.Unsigned, cutils.Base64)
+	if err != nil {
+		return err
+	}
+	fcq := new(guardpb.FileChallengeQuestions)
+	err = proto.Unmarshal(unsignedBytes, fcq)
+	if err != nil {
+		return err
+	}
+
+	privKey, _ := crypto.ToPrivKey(utils.GetPrivateKey())
+	for _, sq := range fcq.ShardQuestions {
+		sign, err := crypto.Sign(privKey, sq)
+		if err != nil {
+			return err
+		}
+		sq.PreparerSignature = sign
+	}
+
+	signed, err := proto.Marshal(fcq)
+	if err != nil {
+		return err
+	}
+	str, err := cutils.BytesToString(signed, cutils.Base64)
+	if err != nil {
+		return err
+	}
+	rb = s.Request("storage/upload/sign", id, utils.GetPeerId(), uts, offlinePeerSessionSignature, sessionStatus, str)
+	return rb.Exec(context.Background(), nil)
+}
+
 func (s *Shell) StorageUploadSignWaitupload(id string, unsignedData *UnsignedData,
 	uts string, sessionStatus string) error {
 	var rb *RequestBuilder

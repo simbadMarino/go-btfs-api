@@ -531,7 +531,8 @@ LOOP:
 			err = s.StorageUploadSignBatch(sessionId, gc, uts, "guard")
 			is.Nil(err)
 			fmt.Printf("%#v\n", storage.Status)
-		case "submit", "submit:check-balance-req-singed", "pay", "pay:payin-req-signed", "guard", "wait-upload":
+		case "submit", "submit:check-balance-req-singed", "pay", "pay:payin-req-signed", "guard",
+			"guard:file-meta-signed", "wait-upload":
 			unsigned, err := s.StorageUploadGetUnsignedData(sessionId, uts, storage.Status)
 			is.Nil(err)
 			switch storage.Status {
@@ -541,10 +542,10 @@ LOOP:
 				err = s.StorageUploadSignPayChannel(sessionId, unsigned, uts, storage.Status, unsigned.Price)
 			case "pay":
 				err = s.StorageUploadSignPayRequest(sessionId, unsigned, uts, storage.Status)
-			case "pay:payin-req-signed":
-				err = s.StorageUploadSignGuardFileMeta(sessionId, unsigned, uts, storage.Status)
 			case "guard":
 				err = s.StorageUploadSignGuardFileMeta(sessionId, unsigned, uts, storage.Status)
+			case "guard:file-meta-signed":
+				err = s.StorageUploadSignGuardQuestions(sessionId, unsigned, uts, storage.Status)
 			case "wait-upload":
 				err = s.StorageUploadSignWaitupload(sessionId, unsigned, uts, storage.Status)
 			default:
