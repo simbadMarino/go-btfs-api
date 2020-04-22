@@ -328,7 +328,6 @@ func (s *Shell) StorageUploadSignBalance(id string, unsignedData *UnsignedData, 
 
 	offlinePeerSessionSignature, err := getSessionSignature()
 	if err != nil {
-		fmt.Println("here err 1", err)
 		return err
 	}
 
@@ -430,7 +429,10 @@ func (s *Shell) StorageUploadSignPayRequest(id string, unsignedData *UnsignedDat
 	}
 
 	chanState := result.Result.BuyerChannelState
-	privKey, _ := crypto.ToPrivKey(utils.GetPrivateKey())
+	privKey, err := crypto.ToPrivKey(utils.GetPrivateKey())
+	if err != nil {
+		return err
+	}
 	sig, err := crypto.Sign(privKey, chanState.Channel)
 	if err != nil {
 		return err
@@ -486,7 +488,10 @@ func (s *Shell) StorageUploadSignGuardFileMeta(id string, unsignedData *Unsigned
 		return err
 	}
 
-	privKey, _ := crypto.ToPrivKey(utils.GetPrivateKey())
+	privKey, err := crypto.ToPrivKey(utils.GetPrivateKey())
+	if err != nil {
+		return err
+	}
 	signed, err := crypto.Sign(privKey, meta)
 	if err != nil {
 		return err
@@ -518,7 +523,10 @@ func (s *Shell) StorageUploadSignGuardQuestions(id string, unsignedData *Unsigne
 		return err
 	}
 
-	privKey, _ := crypto.ToPrivKey(utils.GetPrivateKey())
+	privKey, err := crypto.ToPrivKey(utils.GetPrivateKey())
+	if err != nil {
+		return err
+	}
 	for _, sq := range fcq.ShardQuestions {
 		sign, err := crypto.Sign(privKey, sq)
 		if err != nil {
@@ -557,7 +565,10 @@ func (s *Shell) StorageUploadSignWaitupload(id string, unsignedData *UnsignedDat
 		return err
 	}
 
-	privKey, _ := crypto.ToPrivKey(utils.GetPrivateKey())
+	privKey, err := crypto.ToPrivKey(utils.GetPrivateKey())
+	if err != nil {
+		return err
+	}
 	signed, err := crypto.Sign(privKey, meta)
 	if err != nil {
 		return err
