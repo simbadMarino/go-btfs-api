@@ -88,7 +88,7 @@ func (d UnsignedData) SignBalanceData(privateKey string) (*ledgerpb.SignedPublic
 	if err != nil {
 		return nil, err
 	}
-	pubKeyRaw, err := privKey.GetPublic().Raw()
+	pubKeyRaw, err := ic.RawFull(privKey.GetPublic())
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (d UnsignedData) SignBalanceData(privateKey string) (*ledgerpb.SignedPublic
 	return lgSignedPubKey, nil
 }
 
-func (c Contracts) SignContracts(privateKey string, sessionStatus string) (*Contracts, error) {
+func (c Contracts) SignContracts(privateKey string, t string) (*Contracts, error) {
 	// Perform signing using private key
 	privKey, err := crypto.ToPrivKey(privateKey)
 	if err != nil {
@@ -118,9 +118,8 @@ func (c Contracts) SignContracts(privateKey string, sessionStatus string) (*Cont
 			return nil, err
 		}
 		var signedContract []byte
-		if sessionStatus == "initSignReadyEscrow" {
+		if t == "escrow" {
 			escrowContract := &escrowpb.EscrowContract{}
-
 			err = proto.Unmarshal(by, escrowContract)
 			if err != nil {
 				return nil, err
@@ -130,9 +129,8 @@ func (c Contracts) SignContracts(privateKey string, sessionStatus string) (*Cont
 				return nil, err
 			}
 
-		} else {
+		} else if t == "guard" {
 			guardContract := &guardpb.ContractMeta{}
-			//var guardContract proto.Message
 			err := proto.Unmarshal(by, guardContract)
 			if err != nil {
 				return nil, err
@@ -141,6 +139,8 @@ func (c Contracts) SignContracts(privateKey string, sessionStatus string) (*Cont
 			if err != nil {
 				return nil, err
 			}
+		} else {
+			return nil, errors.New("not support type:" + t)
 		}
 		// This overwrites
 		str, err := cutils.BytesToString(signedContract, cutils.Base64)
@@ -246,7 +246,7 @@ func (s *Shell) StorageUploadOffSign(hash string, uts string, options ...Storage
 	if err != nil {
 		return "", err
 	}
-	rb := s.Request("storage/upload/offline", hash, utils.GetPeerId(), uts, offlinePeerSessionSignature)
+	rb := s.Request("storage/upload", hash, utils.GetPeerId(), uts, offlinePeerSessionSignature)
 	for _, option := range options {
 		_ = option(rb)
 	}
@@ -261,18 +261,18 @@ func (s *Shell) StorageUploadStatus(id string) (*Storage, error) {
 }
 
 // Storage upload get offline contract batch api.
-func (s *Shell) StorageUploadGetContractBatch(sid string, hash string, uts string, sessionStatus string) (*Contracts, error) {
+func (s *Shell) StorageUploadGetContractBatch(sid string, uts string, t string) (*Contracts, error) {
 	var out Contracts
 	offlinePeerSessionSignature, err := getSessionSignature()
 	if err != nil {
 		return nil, err
 	}
-	rb := s.Request("storage/upload/getcontractbatch", sid, utils.GetPeerId(), uts, offlinePeerSessionSignature, sessionStatus)
+	rb := s.Request("storage/upload/getcontractbatch", sid, utils.GetPeerId(), uts, offlinePeerSessionSignature, t)
 	return &out, rb.Exec(context.Background(), &out)
 }
 
 // Storage upload get offline unsigned data api.
-func (s *Shell) StorageUploadGetUnsignedData(sid string, hash string, uts string, sessionStatus string) (*UnsignedData, error) {
+func (s *Shell) StorageUploadGetUnsignedData(sid string, uts string, sessionStatus string) (*UnsignedData, error) {
 	var out UnsignedData
 	offlinePeerSessionSignature, err := getSessionSignature()
 	if err != nil {
@@ -283,7 +283,7 @@ func (s *Shell) StorageUploadGetUnsignedData(sid string, hash string, uts string
 }
 
 // Storage upload sign offline contract batch api.
-func (s *Shell) StorageUploadSignBatch(sid string, hash string, unsignedBatchContracts *Contracts, uts string, sessionStatus string) error {
+func (s *Shell) StorageUploadSignBatch(sid string, unsignedBatchContracts *Contracts, uts string, t string) error {
 	var signedBatchContracts *Contracts
 	var errSign error
 	offlinePeerSessionSignature, err := getSessionSignature()
@@ -291,7 +291,7 @@ func (s *Shell) StorageUploadSignBatch(sid string, hash string, unsignedBatchCon
 		return err
 	}
 
-	signedBatchContracts, errSign = unsignedBatchContracts.SignContracts(utils.GetPrivateKey(), sessionStatus)
+	signedBatchContracts, errSign = unsignedBatchContracts.SignContracts(utils.GetPrivateKey(), t)
 	if errSign != nil {
 		return err
 	}
@@ -301,8 +301,10 @@ func (s *Shell) StorageUploadSignBatch(sid string, hash string, unsignedBatchCon
 	}
 
 	rb := s.Request("storage/upload/signcontractbatch", sid, utils.GetPeerId(), uts, offlinePeerSessionSignature,
-		sessionStatus, string(bytesSignBatch))
-	return rb.Exec(context.Background(), nil)
+		t, string(bytesSignBatch))
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	errSign = rb.Exec(ctx, nil)
+	return errSign
 }
 
 // Storage upload sign offline data api.
@@ -321,8 +323,7 @@ func (s *Shell) StorageUploadSign(id string, hash string, unsignedData *Unsigned
 	return out, rb.Exec(context.Background(), &out)
 }
 
-func (s *Shell) StorageUploadSignBalance(id string, hash string, unsignedData *UnsignedData,
-	uts string, sessionStatus string) error {
+func (s *Shell) StorageUploadSignBalance(id string, unsignedData *UnsignedData, uts string, sessionStatus string) error {
 	var rb *RequestBuilder
 
 	offlinePeerSessionSignature, err := getSessionSignature()
@@ -342,11 +343,12 @@ func (s *Shell) StorageUploadSignBalance(id string, hash string, unsignedData *U
 	if err != nil {
 		return err
 	}
-	rb = s.Request("storage/upload/sign", id, utils.GetPeerId(), uts, offlinePeerSessionSignature, str, sessionStatus)
+	rb = s.Request("storage/upload/sign", id, utils.GetPeerId(), uts, offlinePeerSessionSignature, sessionStatus, str)
 	return rb.Exec(context.Background(), nil)
 }
 
-func (s *Shell) StorageUploadSignPayChannel(id, hash string, unsignedData *UnsignedData, uts string, sessionStatus string, totalPrice int64) error {
+func (s *Shell) StorageUploadSignPayChannel(id string, unsignedData *UnsignedData, uts string, sessionStatus string,
+	totalPrice int64) error {
 	var rb *RequestBuilder
 	offlinePeerSessionSignature, err := getSessionSignature()
 	if err != nil {
@@ -399,12 +401,13 @@ func (s *Shell) StorageUploadSignPayChannel(id, hash string, unsignedData *Unsig
 	if err != nil {
 		return err
 	}
-	rb = s.Request("storage/upload/sign", id, utils.GetPeerId(), uts, offlinePeerSessionSignature, signedChanCommitBytesStr, sessionStatus)
+	rb = s.Request("storage/upload/sign", id, utils.GetPeerId(), uts, offlinePeerSessionSignature, sessionStatus,
+		signedChanCommitBytesStr)
 	return rb.Exec(context.Background(), nil)
 }
 
-func (s *Shell) StorageUploadSignPayRequest(id, hash string, unsignedData *UnsignedData,
-	uts string, sessionStatus string) error {
+func (s *Shell) StorageUploadSignPayRequest(id string, unsignedData *UnsignedData, uts string,
+	sessionStatus string) error {
 	var rb *RequestBuilder
 
 	offlinePeerSessionSignature, err := getSessionSignature()
@@ -423,7 +426,10 @@ func (s *Shell) StorageUploadSignPayRequest(id, hash string, unsignedData *Unsig
 	}
 
 	chanState := result.Result.BuyerChannelState
-	privKey, _ := crypto.ToPrivKey(utils.GetPrivateKey())
+	privKey, err := crypto.ToPrivKey(utils.GetPrivateKey())
+	if err != nil {
+		return err
+	}
 	sig, err := crypto.Sign(privKey, chanState.Channel)
 	if err != nil {
 		return err
@@ -457,11 +463,11 @@ func (s *Shell) StorageUploadSignPayRequest(id, hash string, unsignedData *Unsig
 	if err != nil {
 		return err
 	}
-	rb = s.Request("storage/upload/sign", id, utils.GetPeerId(), uts, offlinePeerSessionSignature, str, sessionStatus)
+	rb = s.Request("storage/upload/sign", id, utils.GetPeerId(), uts, offlinePeerSessionSignature, sessionStatus, str)
 	return rb.Exec(context.Background(), nil)
 }
 
-func (s *Shell) StorageUploadSignGuardFileMeta(id, hash string, unsignedData *UnsignedData,
+func (s *Shell) StorageUploadSignGuardFileMeta(id string, unsignedData *UnsignedData,
 	uts string, sessionStatus string) error {
 	var rb *RequestBuilder
 
@@ -479,7 +485,10 @@ func (s *Shell) StorageUploadSignGuardFileMeta(id, hash string, unsignedData *Un
 		return err
 	}
 
-	privKey, _ := crypto.ToPrivKey(utils.GetPrivateKey())
+	privKey, err := crypto.ToPrivKey(utils.GetPrivateKey())
+	if err != nil {
+		return err
+	}
 	signed, err := crypto.Sign(privKey, meta)
 	if err != nil {
 		return err
@@ -489,6 +498,83 @@ func (s *Shell) StorageUploadSignGuardFileMeta(id, hash string, unsignedData *Un
 	if err != nil {
 		return err
 	}
-	rb = s.Request("storage/upload/sign", id, utils.GetPeerId(), uts, offlinePeerSessionSignature, str, sessionStatus)
+	rb = s.Request("storage/upload/sign", id, utils.GetPeerId(), uts, offlinePeerSessionSignature, sessionStatus, str)
+	return rb.Exec(context.Background(), nil)
+}
+
+func (s *Shell) StorageUploadSignGuardQuestions(id string, unsignedData *UnsignedData,
+	uts string, sessionStatus string) error {
+	var rb *RequestBuilder
+
+	offlinePeerSessionSignature, err := getSessionSignature()
+	if err != nil {
+		return err
+	}
+	unsignedBytes, err := cutils.StringToBytes(unsignedData.Unsigned, cutils.Base64)
+	if err != nil {
+		return err
+	}
+	fcq := new(guardpb.FileChallengeQuestions)
+	err = proto.Unmarshal(unsignedBytes, fcq)
+	if err != nil {
+		return err
+	}
+
+	privKey, err := crypto.ToPrivKey(utils.GetPrivateKey())
+	if err != nil {
+		return err
+	}
+	for _, sq := range fcq.ShardQuestions {
+		sign, err := crypto.Sign(privKey, sq)
+		if err != nil {
+			return err
+		}
+		sq.PreparerSignature = sign
+	}
+
+	signed, err := proto.Marshal(fcq)
+	if err != nil {
+		return err
+	}
+	str, err := cutils.BytesToString(signed, cutils.Base64)
+	if err != nil {
+		return err
+	}
+	rb = s.Request("storage/upload/sign", id, utils.GetPeerId(), uts, offlinePeerSessionSignature, sessionStatus, str)
+	return rb.Exec(context.Background(), nil)
+}
+
+func (s *Shell) StorageUploadSignWaitupload(id string, unsignedData *UnsignedData,
+	uts string, sessionStatus string) error {
+	var rb *RequestBuilder
+
+	offlinePeerSessionSignature, err := getSessionSignature()
+	if err != nil {
+		return err
+	}
+	unsignedBytes, err := cutils.StringToBytes(unsignedData.Unsigned, cutils.Base64)
+	if err != nil {
+		return err
+	}
+	meta := new(guardpb.CheckFileStoreMetaRequest)
+	err = proto.Unmarshal(unsignedBytes, meta)
+	if err != nil {
+		return err
+	}
+
+	privKey, err := crypto.ToPrivKey(utils.GetPrivateKey())
+	if err != nil {
+		return err
+	}
+	signed, err := crypto.Sign(privKey, meta)
+	if err != nil {
+		return err
+	}
+
+	str, err := cutils.BytesToString(signed, cutils.Base64)
+	if err != nil {
+		return err
+	}
+	rb = s.Request("storage/upload/sign", id, utils.GetPeerId(), uts, offlinePeerSessionSignature, sessionStatus, str)
 	return rb.Exec(context.Background(), nil)
 }
