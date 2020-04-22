@@ -333,17 +333,14 @@ func (s *Shell) StorageUploadSignBalance(id string, unsignedData *UnsignedData, 
 
 	ledgerSignedPublicKey, err := unsignedData.SignBalanceData(utils.GetPrivateKey())
 	if err != nil {
-		fmt.Println("here err 2", err)
 		return err
 	}
 	signedBytes, err := proto.Marshal(ledgerSignedPublicKey) // TODO: check if ic.Marshall is necessary!
 	if err != nil {
-		fmt.Println("here err 3", err)
 		return err
 	}
 	str, err := cutils.BytesToString(signedBytes, cutils.Base64)
 	if err != nil {
-		fmt.Println("here err 4", err)
 		return err
 	}
 	rb = s.Request("storage/upload/sign", id, utils.GetPeerId(), uts, offlinePeerSessionSignature, sessionStatus, str)
