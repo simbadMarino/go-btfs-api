@@ -502,7 +502,7 @@ func TestNewShellWithUnixSocket(t *testing.T) {
 
 	// handle simple `hello` route
 	mux := http.NewServeMux()
-	mux.HandleFunc("/api/v0/hello", func(w http.ResponseWriter, _ *http.Request) {
+	mux.HandleFunc(fmt.Sprintf("/api/%s/hello", API_VERSION), func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprint(w, "Hello World\n")
 	})
 
@@ -512,6 +512,7 @@ func TestNewShellWithUnixSocket(t *testing.T) {
 	shell := NewShell("/unix/" + sockpath)
 	res, err := shell.Request("hello").Send(context.Background())
 	is.Nil(err)
+	is.Nil(res.Error)
 
 	defer res.Output.Close()
 
