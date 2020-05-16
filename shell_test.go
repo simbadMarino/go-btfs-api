@@ -1,11 +1,18 @@
 package shell
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"crypto/md5"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"math/rand"
+	"net"
+	"net/http"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"testing"
@@ -30,6 +37,14 @@ func TestAdd(t *testing.T) {
 	mhash, err := s.Add(bytes.NewBufferString("Hello IPFS Shell tests"))
 	is.Nil(err)
 	is.Equal(mhash, "QmUfZ9rAdhV5ioBzXKdUTh2ZNsz9bzbkaLVyQ8uc8pj21F")
+
+	mhash, err = s.Add(bytes.NewBufferString("Hello IPFS Shell tests"), Hash("sha3-256"))
+	is.Nil(err)
+	is.Equal(mhash, "bafkrmidz7cuqruceo2hocadpdjppcsi7qw6dypz3jhsae2qda6sexdk6z4")
+
+	mhash, err = s.Add(bytes.NewBufferString("Hello IPFS Shell tests"), CidVersion(1))
+	is.Nil(err)
+	is.Equal(mhash, "bafkreia5cxdsptovvt7qykfcrg4xlpaerart45pfn5di4rbivunybstmii")
 }
 
 func TestRedirect(t *testing.T) {
@@ -291,6 +306,54 @@ func TestPins(t *testing.T) {
 	is.Equal(info.Type, RecursivePin)
 }
 
+func TestPinsStream(t *testing.T) {
+	is := is.New(t)
+	s := NewShell(shellUrl)
+
+	// Add a thing, which pins it by default
+	h, err := s.Add(bytes.NewBufferString("go-ipfs-api pins test 0C7023F8-1FEC-4155-A8E0-432A5853F46B"))
+	is.Nil(err)
+
+	pinChan, err := s.PinsStream(context.Background())
+	is.Nil(err)
+
+	pins := accumulatePins(pinChan)
+
+	_, ok := pins[h]
+	is.True(ok)
+
+	err = s.Unpin(h)
+	is.Nil(err)
+
+	pinChan, err = s.PinsStream(context.Background())
+	is.Nil(err)
+
+	pins = accumulatePins(pinChan)
+
+	_, ok = pins[h]
+	is.False(ok)
+
+	err = s.Pin(h)
+	is.Nil(err)
+
+	pinChan, err = s.PinsStream(context.Background())
+	is.Nil(err)
+
+	pins = accumulatePins(pinChan)
+
+	_type, ok := pins[h]
+	is.True(ok)
+	is.Equal(_type, RecursivePin)
+}
+
+func accumulatePins(pinChan <-chan PinStreamInfo) map[string]string {
+	pins := make(map[string]string)
+	for pin := range pinChan {
+		pins[pin.Cid] = pin.Type
+	}
+	return pins
+}
+
 func TestPatch_rmLink(t *testing.T) {
 	is := is.New(t)
 	s := NewShell(shellUrl)
@@ -393,7 +456,7 @@ func TestDagPut(t *testing.T) {
 
 	c, err := s.DagPut(`{"x": "abc","y":"def"}`, "json", "cbor")
 	is.Nil(err)
-	is.Equal(c, "zdpuAt47YjE9XTgSxUBkiYCbmnktKajQNheQBGASHj3FfYf8M")
+	is.Equal(c, "bafyreidrm3r2k6vlxqp2fk47sboeycf7apddib47w7cyagrajtpaxxl2pi")
 }
 
 func TestDagPutWithOpts(t *testing.T) {
@@ -402,7 +465,7 @@ func TestDagPutWithOpts(t *testing.T) {
 
 	c, err := s.DagPutWithOpts(`{"x": "abc","y":"def"}`, options.Dag.Pin("true"))
 	is.Nil(err)
-	is.Equal(c, "zdpuAt47YjE9XTgSxUBkiYCbmnktKajQNheQBGASHj3FfYf8M")
+	is.Equal(c, "bafyreidrm3r2k6vlxqp2fk47sboeycf7apddib47w7cyagrajtpaxxl2pi")
 }
 
 func TestStatsBW(t *testing.T) {
@@ -417,6 +480,72 @@ func TestSwarmPeers(t *testing.T) {
 	s := NewShell(shellUrl)
 	_, err := s.SwarmPeers(context.Background())
 	is.Nil(err)
+}
+
+// TestNewShellWithUnixSocket only check that http client is well configured to
+// perform http request on unix socket address
+func TestNewShellWithUnixSocket(t *testing.T) {
+	is := is.New(t)
+
+	// setup uds temporary dir
+	path, err := ioutil.TempDir("", "uds-test")
+	is.Nil(err)
+
+	defer os.RemoveAll(path)
+
+	// listen on sock path
+	sockpath := filepath.Join(path, "sock")
+	lsock, err := net.Listen("unix", sockpath)
+	is.Nil(err)
+
+	defer lsock.Close()
+
+	// handle simple `hello` route
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/v0/hello", func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(w, "Hello World\n")
+	})
+
+	go http.Serve(lsock, mux)
+
+	// create shell with "/unix/<sockpath>" multiaddr
+	shell := NewShell("/unix/" + sockpath)
+	res, err := shell.Request("hello").Send(context.Background())
+	is.Nil(err)
+
+	defer res.Output.Close()
+
+	// read hello world from body
+	str, err := bufio.NewReader(res.Output).ReadString('\n')
+	is.Nil(err)
+	is.Equal(str, "Hello World\n")
+}
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const (
+	letterIdxBits = 6                    // 6 bits to represent a letter index
+	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
+)
+
+var src = rand.NewSource(time.Now().UnixNano())
+
+func randString(n int) string {
+	b := make([]byte, n)
+	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
+	for i, cache, remain := n-1, src.Int63(), letterIdxMax; i >= 0; {
+		if remain == 0 {
+			cache, remain = src.Int63(), letterIdxMax
+		}
+		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
+			b[i] = letterBytes[idx]
+			i--
+		}
+		cache >>= letterIdxBits
+		remain--
+	}
+
+	return string(b)
 }
 
 func TestRefs(t *testing.T) {

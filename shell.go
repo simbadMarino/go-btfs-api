@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	gohttp "net/http"
 	"os"
 	"path"
@@ -72,20 +73,51 @@ func NewShell(url string) *Shell {
 	return NewShellWithClient(url, c)
 }
 
-func NewShellWithClient(url string, c *gohttp.Client) *Shell {
-	if a, err := ma.NewMultiaddr(url); err == nil {
-		_, host, err := manet.DialArgs(a)
-		if err == nil {
-			url = host
-		}
-	}
+func NewShellWithClient(url string, client *gohttp.Client) *Shell {
 	var sh Shell
+
 	sh.url = url
-	sh.httpcli = *c
+	sh.httpcli = *client
 	// We don't support redirects.
 	sh.httpcli.CheckRedirect = func(_ *gohttp.Request, _ []*gohttp.Request) error {
 		return fmt.Errorf("unexpected redirect")
 	}
+
+	maddr, err := ma.NewMultiaddr(url)
+	if err != nil {
+		return &sh
+	}
+
+	network, host, err := manet.DialArgs(maddr)
+	if err != nil {
+		return &sh
+	}
+
+	if network == "unix" {
+		sh.url = network
+
+		var tptCopy *gohttp.Transport
+		if tpt, ok := sh.httpcli.Transport.(*gohttp.Transport); ok && tpt.DialContext == nil {
+			tptCopy = tpt.Clone()
+		} else if sh.httpcli.Transport == nil {
+			tptCopy = &gohttp.Transport{
+				Proxy:             gohttp.ProxyFromEnvironment,
+				DisableKeepAlives: true,
+			}
+		} else {
+			// custom Transport or custom Dialer, we are done here
+			return &sh
+		}
+
+		tptCopy.DialContext = func(_ context.Context, _, _ string) (net.Conn, error) {
+			return net.Dial("unix", host)
+		}
+
+		sh.httpcli.Transport = tptCopy
+	} else {
+		sh.url = host
+	}
+
 	return &sh
 }
 
@@ -196,13 +228,56 @@ type PinInfo struct {
 }
 
 // Pins returns a map of the pin hashes to their info (currently just the
-// pin type, one of DirectPin, RecursivePin, or IndirectPin. A map is returned
+// pin type, one of DirectPin, RecursivePin, or IndirectPin). A map is returned
 // instead of a slice because it is easier to do existence lookup by map key
 // than unordered array searching. The map is likely to be more useful to a
 // client than a flat list.
 func (s *Shell) Pins() (map[string]PinInfo, error) {
 	var raw struct{ Keys map[string]PinInfo }
 	return raw.Keys, s.Request("pin/ls").Exec(context.Background(), &raw)
+}
+
+// PinStreamInfo is the output type for PinsStream
+type PinStreamInfo struct {
+	Cid  string
+	Type string
+}
+
+// PinsStream is a streamed version of Pins. It returns a channel of the pins
+// with their type, one of DirectPin, RecursivePin, or IndirectPin.
+func (s *Shell) PinsStream(ctx context.Context) (<-chan PinStreamInfo, error) {
+	resp, err := s.Request("pin/ls").
+		Option("stream", true).
+		Send(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.Error != nil {
+		resp.Close()
+		return nil, resp.Error
+	}
+
+	out := make(chan PinStreamInfo)
+	go func() {
+		defer resp.Close()
+		var pin PinStreamInfo
+		defer close(out)
+		dec := json.NewDecoder(resp.Output)
+		for {
+			err := dec.Decode(&pin)
+			if err != nil {
+				return
+			}
+			select {
+			case out <- pin:
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+
+	return out, nil
 }
 
 type PeerInfo struct {
@@ -437,7 +512,11 @@ func (s *Shell) PubSubSubscribe(topic string) (*PubSubSubscription, error) {
 	if err != nil {
 		return nil, err
 	}
-	return newPubSubSubscription(resp), nil
+	if resp.Error != nil {
+		resp.Close()
+		return nil, resp.Error
+	}
+	return newPubSubSubscription(resp.Output), nil
 }
 
 func (s *Shell) PubSubPublish(topic, data string) (err error) {

@@ -6,9 +6,9 @@ import (
 	"errors"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
 
-	"github.com/TRON-US/go-btfs-files"
+	files "github.com/TRON-US/go-btfs-files"
 )
 
 type object struct {
@@ -55,6 +55,22 @@ func Progress(enabled bool) AddOpts {
 func RawLeaves(enabled bool) AddOpts {
 	return func(rb *RequestBuilder) error {
 		rb.Option("raw-leaves", enabled)
+		return nil
+	}
+}
+
+// Hash allows for selecting the multihash type
+func Hash(hash string) AddOpts {
+	return func(rb *RequestBuilder) error {
+		rb.Option("hash", hash)
+		return nil
+	}
+}
+
+// CidVersion allows for selecting the CID version that ipfs should use.
+func CidVersion(version int) AddOpts {
+	return func(rb *RequestBuilder) error {
+		rb.Option("cid-version", version)
 		return nil
 	}
 }
@@ -108,7 +124,7 @@ func (s *Shell) AddSerialFileDir(dir string, reedSolomon bool) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	slf := files.NewSliceDirectory([]files.DirEntry{files.FileEntry(path.Base(dir), sf)})
+	slf := files.NewSliceDirectory([]files.DirEntry{files.FileEntry(filepath.Base(dir), sf)})
 	reader := files.NewMultiFileReader(slf, true)
 
 	return s.addDirectoryFromReader(reader, reedSolomon)
