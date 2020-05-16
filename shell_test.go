@@ -587,6 +587,7 @@ func randBytes(is is.I, size int) []byte {
 	is.Nil(err)
 	return b
 }
+
 func TestStorageUploadWithOnSign(t *testing.T) {
 	is := is.New(t)
 	err := utils.LoadApiConfig()
@@ -603,21 +604,18 @@ func TestStorageUploadWithOnSign(t *testing.T) {
 	var storage *Storage
 LOOP:
 	for {
+		sleepMoment()
 		storage, err = s.StorageUploadStatus(sessionId)
 		is.Nil(err)
 		switch storage.Status {
 		case "complete":
+			fmt.Printf("Complete\n")
 			break LOOP
 		case "error":
-			fmt.Printf("%#v, %#v\n", storage.Status, storage.Message)
-			t.Fatal(fmt.Errorf("%s", storage.Message))
-		default:
-			fmt.Printf("%#v continue \n", storage.Status)
-			sleepMoment()
-			continue
+			t.Fatal(fmt.Errorf("Failed: %s", storage.Message))
+			break LOOP
 		}
 	}
-	fmt.Printf("Complete\n")
 }
 
 func TestStorageUploadWithOffSign(t *testing.T) {
@@ -634,7 +632,6 @@ func TestStorageUploadWithOffSign(t *testing.T) {
 	sessionId, err := s.StorageUploadOffSign(mhash, uts)
 	is.Nil(err)
 
-	//var storage Storage
 LOOP:
 	for {
 		sleepMoment()
@@ -642,9 +639,11 @@ LOOP:
 		is.Nil(err)
 		switch storage.Status {
 		case "complete":
+			fmt.Printf("Complete\n")
 			break LOOP
 		case "error":
-			t.Fatal(fmt.Errorf("%s", storage.Message))
+			t.Fatal(fmt.Errorf("Failed: %s", storage.Message))
+			break LOOP
 		case "init":
 			ec, err := s.StorageUploadGetContractBatch(sessionId, uts, "escrow")
 			is.Nil(err)
@@ -660,7 +659,6 @@ LOOP:
 			is.Nil(err)
 			err = s.StorageUploadSignBatch(sessionId, gc, uts, "guard")
 			is.Nil(err)
-			fmt.Printf("%#v\n", storage.Status)
 		case "submit", "submit:check-balance-req-singed", "pay", "pay:payin-req-signed", "guard",
 			"guard:file-meta-signed", "wait-upload":
 			unsigned, err := s.StorageUploadGetUnsignedData(sessionId, uts, storage.Status)
@@ -681,10 +679,6 @@ LOOP:
 			default:
 			}
 			is.Nil(err)
-			fmt.Printf("%#v\n", storage.Status)
-		default:
-			fmt.Printf("%#v continue \n", storage.Status)
 		}
 	}
-	fmt.Printf("Complete\n")
 }
