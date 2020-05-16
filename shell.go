@@ -1,4 +1,4 @@
-// package shell implements a remote API interface for a running ipfs daemon
+// package shell implements a remote API interface for a running btfs daemon
 package shell
 
 import (
@@ -407,10 +407,10 @@ func (s *Shell) ResolvePath(path string) (string, error) {
 		return "", err
 	}
 
-	return strings.TrimPrefix(out.Path, "/ipfs/"), nil
+	return strings.TrimPrefix(out.Path, "/btfs/"), nil
 }
 
-// returns ipfs version and commit sha
+// returns btfs version and commit sha
 func (s *Shell) Version() (string, string, error) {
 	ver := struct {
 		Version string

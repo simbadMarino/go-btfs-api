@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-var examplesHashForIPNS = "/ipfs/Qmbu7x6gJbsKDcseQv66pSbUcAA3Au6f7MfTYVXwvBxN2K"
+var examplesHashForIPNS = "/btfs/Qmbu7x6gJbsKDcseQv66pSbUcAA3Au6f7MfTYVXwvBxN2K"
 var testKey = "self" // feel free to change to whatever key you have locally
 
 func TestPublishDetailsWithKey(t *testing.T) {

@@ -67,7 +67,7 @@ func Hash(hash string) AddOpts {
 	}
 }
 
-// CidVersion allows for selecting the CID version that ipfs should use.
+// CidVersion allows for selecting the CID version that btfs should use.
 func CidVersion(version int) AddOpts {
 	return func(rb *RequestBuilder) error {
 		rb.Option("cid-version", version)
@@ -88,13 +88,13 @@ func (s *Shell) Add(r io.Reader, options ...AddOpts) (string, error) {
 	return out.Hash, rb.Body(fileReader).Exec(context.Background(), &out)
 }
 
-// AddNoPin adds a file to ipfs without pinning it
+// AddNoPin adds a file to btfs without pinning it
 // Deprecated: Use Add() with option functions instead
 func (s *Shell) AddNoPin(r io.Reader) (string, error) {
 	return s.Add(r, Pin(false))
 }
 
-// AddWithOpts adds a file to ipfs with some additional options
+// AddWithOpts adds a file to btfs with some additional options
 // Deprecated: Use Add() with option functions instead
 func (s *Shell) AddWithOpts(r io.Reader, pin bool, rawLeaves bool) (string, error) {
 	return s.Add(r, Pin(pin), RawLeaves(rawLeaves))

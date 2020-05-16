@@ -6,7 +6,7 @@ import (
 	"io"
 )
 
-// Logger is used to handle incoming logs from the ipfs node
+// Logger is used to handle incoming logs from the btfs node
 type Logger struct {
 	resp io.ReadCloser
 	dec  *json.Decoder
