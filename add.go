@@ -6,9 +6,9 @@ import (
 	"errors"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
 
-	"github.com/TRON-US/go-btfs-files"
+	files "github.com/TRON-US/go-btfs-files"
 )
 
 type object struct {
@@ -59,6 +59,22 @@ func RawLeaves(enabled bool) AddOpts {
 	}
 }
 
+// Hash allows for selecting the multihash type
+func Hash(hash string) AddOpts {
+	return func(rb *RequestBuilder) error {
+		rb.Option("hash", hash)
+		return nil
+	}
+}
+
+// CidVersion allows for selecting the CID version that btfs should use.
+func CidVersion(version int) AddOpts {
+	return func(rb *RequestBuilder) error {
+		rb.Option("cid-version", version)
+		return nil
+	}
+}
+
 func (s *Shell) Add(r io.Reader, options ...AddOpts) (string, error) {
 	fr := files.NewReaderFile(r)
 	slf := files.NewSliceDirectory([]files.DirEntry{files.FileEntry("", fr)})
@@ -72,13 +88,13 @@ func (s *Shell) Add(r io.Reader, options ...AddOpts) (string, error) {
 	return out.Hash, rb.Body(fileReader).Exec(context.Background(), &out)
 }
 
-// AddNoPin adds a file to ipfs without pinning it
+// AddNoPin adds a file to btfs without pinning it
 // Deprecated: Use Add() with option functions instead
 func (s *Shell) AddNoPin(r io.Reader) (string, error) {
 	return s.Add(r, Pin(false))
 }
 
-// AddWithOpts adds a file to ipfs with some additional options
+// AddWithOpts adds a file to btfs with some additional options
 // Deprecated: Use Add() with option functions instead
 func (s *Shell) AddWithOpts(r io.Reader, pin bool, rawLeaves bool) (string, error) {
 	return s.Add(r, Pin(pin), RawLeaves(rawLeaves))
@@ -108,7 +124,7 @@ func (s *Shell) AddSerialFileDir(dir string, reedSolomon bool) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	slf := files.NewSliceDirectory([]files.DirEntry{files.FileEntry(path.Base(dir), sf)})
+	slf := files.NewSliceDirectory([]files.DirEntry{files.FileEntry(filepath.Base(dir), sf)})
 	reader := files.NewMultiFileReader(slf, true)
 
 	return s.addDirectoryFromReader(reader, reedSolomon)

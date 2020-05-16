@@ -1,19 +1,18 @@
 # go-btfs-api
 
-> An unofficial go interface to btfs's HTTP API
+> Go interface to BTFS HTTP API
 
 ## Install
 
 ```sh
-go get -u github.com/ipfs/go-btfs-api
+go get -u github.com/TRON-US/go-btfs-api
 ```
 
 This will download the source into `$GOPATH/src/github.com/TRON-US/go-btfs-api`.
 
 ## Usage
 
-See [the godocs](https://godoc.org/github.com/TRON-US/go-btfs-api) for details on available methods. This should match 
-the 
+See [the godocs](https://pkg.go.dev/github.com/TRON-US/go-btfs-api) for details on available methods.
 
 ### Example
 
@@ -42,7 +41,7 @@ func main() {
 }
 ```
 
-For a more complete example, please see: https://github.com/ipfs/go-btfs-api/blob/master/tests/main.go
+For a more complete example, please see: https://github.com/TRON-US/go-btfs-api/blob/master/tests/main.go
 
 ## Contribute
 
@@ -50,4 +49,4 @@ Contributions are welcome! Please check out the [issues](https://github.com/btfs
 
 ## License
 
-MIT
+MIT @ TRON-US.

@@ -20,6 +20,7 @@ const (
 )
 
 type Request struct {
+	Ctx     context.Context
 	ApiBase string
 	Command string
 	Args    []string
@@ -38,6 +39,7 @@ func NewRequest(ctx context.Context, url, command string, args ...string) *Reque
 		"stream-channels": "true",
 	}
 	return &Request{
+		Ctx:     ctx,
 		ApiBase: url + "/api/" + API_VERSION,
 		Command: command,
 		Args:    args,
@@ -117,6 +119,8 @@ func (r *Request) Send(c *http.Client) (*Response, error) {
 		return nil, err
 	}
 
+	req = req.WithContext(r.Ctx)
+
 	// Add any headers that were supplied via the RequestBuilder.
 	for k, v := range r.Headers {
 		req.Header.Add(k, v)
@@ -149,20 +153,20 @@ func (r *Request) Send(c *http.Client) (*Response, error) {
 		case contentType == "text/plain":
 			out, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "ipfs-shell: warning! response (%d) read error: %s\n", resp.StatusCode, err)
+				fmt.Fprintf(os.Stderr, "btfs-shell: warning! response (%d) read error: %s\n", resp.StatusCode, err)
 			}
 			e.Message = string(out)
 		case contentType == "application/json":
 			if err = json.NewDecoder(resp.Body).Decode(e); err != nil {
-				fmt.Fprintf(os.Stderr, "ipfs-shell: warning! response (%d) unmarshall error: %s\n", resp.StatusCode, err)
+				fmt.Fprintf(os.Stderr, "btfs-shell: warning! response (%d) unmarshall error: %s\n", resp.StatusCode, err)
 			}
 		default:
-			fmt.Fprintf(os.Stderr, "ipfs-shell: warning! unhandled response (%d) encoding: %s", resp.StatusCode, contentType)
+			fmt.Fprintf(os.Stderr, "btfs-shell: warning! unhandled response (%d) encoding: %s", resp.StatusCode, contentType)
 			out, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "ipfs-shell: response (%d) read error: %s\n", resp.StatusCode, err)
+				fmt.Fprintf(os.Stderr, "btfs-shell: response (%d) read error: %s\n", resp.StatusCode, err)
 			}
-			e.Message = fmt.Sprintf("unknown ipfs-shell error encoding: %q - %q", contentType, out)
+			e.Message = fmt.Sprintf("unknown btfs-shell error encoding: %q - %q", contentType, out)
 		}
 		nresp.Error = e
 		nresp.Output = nil

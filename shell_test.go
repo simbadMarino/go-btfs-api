@@ -1,11 +1,18 @@
 package shell
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"crypto/md5"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"math/rand"
+	"net"
+	"net/http"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"testing"
@@ -30,6 +37,14 @@ func TestAdd(t *testing.T) {
 	mhash, err := s.Add(bytes.NewBufferString("Hello IPFS Shell tests"))
 	is.Nil(err)
 	is.Equal(mhash, "QmUfZ9rAdhV5ioBzXKdUTh2ZNsz9bzbkaLVyQ8uc8pj21F")
+
+	mhash, err = s.Add(bytes.NewBufferString("Hello IPFS Shell tests"), Hash("sha3-256"))
+	is.Nil(err)
+	is.Equal(mhash, "bafkrmidz7cuqruceo2hocadpdjppcsi7qw6dypz3jhsae2qda6sexdk6z4")
+
+	mhash, err = s.Add(bytes.NewBufferString("Hello IPFS Shell tests"), CidVersion(1))
+	is.Nil(err)
+	is.Equal(mhash, "bafkreia5cxdsptovvt7qykfcrg4xlpaerart45pfn5di4rbivunybstmii")
 }
 
 func TestRedirect(t *testing.T) {
@@ -183,16 +198,16 @@ func TestLocalShell(t *testing.T) {
 	s := NewLocalShell()
 	is.NotNil(s)
 
-	mhash, err := s.Add(bytes.NewBufferString("Hello IPFS Shell tests"))
+	mhash, err := s.Add(bytes.NewBufferString("Hello BTFS Shell tests"))
 	is.Nil(err)
-	is.Equal(mhash, "QmUfZ9rAdhV5ioBzXKdUTh2ZNsz9bzbkaLVyQ8uc8pj21F")
+	is.Equal(mhash, "QmWdmh44YvneQLiLWjmUBRJ34aVaQk4V39GS3kQTHoKx8C")
 }
 
 func TestCat(t *testing.T) {
 	is := is.New(t)
 	s := NewShell(shellUrl)
 
-	rc, err := s.Cat(fmt.Sprintf("/ipfs/%s/readme", examplesHash))
+	rc, err := s.Cat(fmt.Sprintf("/btfs/%s/readme", examplesHash))
 	is.Nil(err)
 
 	md5 := md5.New()
@@ -205,12 +220,12 @@ func TestList(t *testing.T) {
 	is := is.New(t)
 	s := NewShell(shellUrl)
 
-	list, err := s.List(fmt.Sprintf("/ipfs/%s", examplesHash))
+	list, err := s.List(fmt.Sprintf("/btfs/%s", examplesHash))
 	is.Nil(err)
 
 	is.Equal(len(list), 7)
 
-	// TODO: document difference in size between 'ipfs ls' and 'ipfs file ls -v'. additional object encoding in data block?
+	// TODO: document difference in size between 'btfs ls' and 'btfs file ls -v'. additional object encoding in data block?
 	expected := map[string]LsLink{
 		"about":          {Type: TFile, Hash: "QmZTR5bcpQD7cFgTorqxZDYaew1Wqgfbd2ud9QqGPAkK2V", Name: "about", Size: 1677},
 		"contact":        {Type: TFile, Hash: "QmYCvbfNbCwFR45HiNP45rwJgvatpiW38D961L5qAhUM5Y", Name: "contact", Size: 189},
@@ -232,14 +247,14 @@ func TestFileList(t *testing.T) {
 	is := is.New(t)
 	s := NewShell(shellUrl)
 
-	list, err := s.FileList(fmt.Sprintf("/ipfs/%s", examplesHash))
+	list, err := s.FileList(fmt.Sprintf("/btfs/%s", examplesHash))
 	is.Nil(err)
 
 	is.Equal(list.Type, "Directory")
 	is.Equal(list.Size, 0)
 	is.Equal(len(list.Links), 7)
 
-	// TODO: document difference in sice betwen 'ipfs ls' and 'ipfs file ls -v'. additional object encoding in data block?
+	// TODO: document difference in sice betwen 'btfs ls' and 'btfs file ls -v'. additional object encoding in data block?
 	expected := map[string]UnixLsLink{
 		"about":          {Type: "File", Hash: "QmZTR5bcpQD7cFgTorqxZDYaew1Wqgfbd2ud9QqGPAkK2V", Name: "about", Size: 1677},
 		"contact":        {Type: "File", Hash: "QmYCvbfNbCwFR45HiNP45rwJgvatpiW38D961L5qAhUM5Y", Name: "contact", Size: 189},
@@ -262,7 +277,7 @@ func TestPins(t *testing.T) {
 	s := NewShell(shellUrl)
 
 	// Add a thing, which pins it by default
-	h, err := s.Add(bytes.NewBufferString("go-ipfs-api pins test 9F3D1F30-D12A-4024-9477-8F0C8E4B3A63"))
+	h, err := s.Add(bytes.NewBufferString("go-btfs-api pins test 9F3D1F30-D12A-4024-9477-8F0C8E4B3A63"))
 	is.Nil(err)
 
 	pins, err := s.Pins()
@@ -289,6 +304,54 @@ func TestPins(t *testing.T) {
 	info, ok := pins[h]
 	is.True(ok)
 	is.Equal(info.Type, RecursivePin)
+}
+
+func TestPinsStream(t *testing.T) {
+	is := is.New(t)
+	s := NewShell(shellUrl)
+
+	// Add a thing, which pins it by default
+	h, err := s.Add(bytes.NewBufferString("go-btfs-api pins test 0C7023F8-1FEC-4155-A8E0-432A5853F46B"))
+	is.Nil(err)
+
+	pinChan, err := s.PinsStream(context.Background())
+	is.Nil(err)
+
+	pins := accumulatePins(pinChan)
+
+	_, ok := pins[h]
+	is.True(ok)
+
+	err = s.Unpin(h)
+	is.Nil(err)
+
+	pinChan, err = s.PinsStream(context.Background())
+	is.Nil(err)
+
+	pins = accumulatePins(pinChan)
+
+	_, ok = pins[h]
+	is.False(ok)
+
+	err = s.Pin(h)
+	is.Nil(err)
+
+	pinChan, err = s.PinsStream(context.Background())
+	is.Nil(err)
+
+	pins = accumulatePins(pinChan)
+
+	_type, ok := pins[h]
+	is.True(ok)
+	is.Equal(_type, RecursivePin)
+}
+
+func accumulatePins(pinChan <-chan PinStreamInfo) map[string]string {
+	pins := make(map[string]string)
+	for pin := range pinChan {
+		pins[pin.Cid] = pin.Type
+	}
+	return pins
 }
 
 func TestPatch_rmLink(t *testing.T) {
@@ -321,7 +384,7 @@ func TestResolvePath(t *testing.T) {
 	is := is.New(t)
 	s := NewShell(shellUrl)
 
-	childHash, err := s.ResolvePath(fmt.Sprintf("/ipfs/%s/about", examplesHash))
+	childHash, err := s.ResolvePath(fmt.Sprintf("/btfs/%s/about", examplesHash))
 	is.Nil(err)
 	is.Equal(childHash, "QmZTR5bcpQD7cFgTorqxZDYaew1Wqgfbd2ud9QqGPAkK2V")
 }
@@ -393,7 +456,7 @@ func TestDagPut(t *testing.T) {
 
 	c, err := s.DagPut(`{"x": "abc","y":"def"}`, "json", "cbor")
 	is.Nil(err)
-	is.Equal(c, "zdpuAt47YjE9XTgSxUBkiYCbmnktKajQNheQBGASHj3FfYf8M")
+	is.Equal(c, "bafyreidrm3r2k6vlxqp2fk47sboeycf7apddib47w7cyagrajtpaxxl2pi")
 }
 
 func TestDagPutWithOpts(t *testing.T) {
@@ -402,7 +465,7 @@ func TestDagPutWithOpts(t *testing.T) {
 
 	c, err := s.DagPutWithOpts(`{"x": "abc","y":"def"}`, options.Dag.Pin("true"))
 	is.Nil(err)
-	is.Equal(c, "zdpuAt47YjE9XTgSxUBkiYCbmnktKajQNheQBGASHj3FfYf8M")
+	is.Equal(c, "bafyreidrm3r2k6vlxqp2fk47sboeycf7apddib47w7cyagrajtpaxxl2pi")
 }
 
 func TestStatsBW(t *testing.T) {
@@ -417,6 +480,73 @@ func TestSwarmPeers(t *testing.T) {
 	s := NewShell(shellUrl)
 	_, err := s.SwarmPeers(context.Background())
 	is.Nil(err)
+}
+
+// TestNewShellWithUnixSocket only check that http client is well configured to
+// perform http request on unix socket address
+func TestNewShellWithUnixSocket(t *testing.T) {
+	is := is.New(t)
+
+	// setup uds temporary dir
+	path, err := ioutil.TempDir("", "uds-test")
+	is.Nil(err)
+
+	defer os.RemoveAll(path)
+
+	// listen on sock path
+	sockpath := filepath.Join(path, "sock")
+	lsock, err := net.Listen("unix", sockpath)
+	is.Nil(err)
+
+	defer lsock.Close()
+
+	// handle simple `hello` route
+	mux := http.NewServeMux()
+	mux.HandleFunc(fmt.Sprintf("/api/%s/hello", API_VERSION), func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(w, "Hello World\n")
+	})
+
+	go http.Serve(lsock, mux)
+
+	// create shell with "/unix/<sockpath>" multiaddr
+	shell := NewShell("/unix/" + sockpath)
+	res, err := shell.Request("hello").Send(context.Background())
+	is.Nil(err)
+	is.Nil(res.Error)
+
+	defer res.Output.Close()
+
+	// read hello world from body
+	str, err := bufio.NewReader(res.Output).ReadString('\n')
+	is.Nil(err)
+	is.Equal(str, "Hello World\n")
+}
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const (
+	letterIdxBits = 6                    // 6 bits to represent a letter index
+	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
+)
+
+var src = rand.NewSource(time.Now().UnixNano())
+
+func randString(n int) string {
+	b := make([]byte, n)
+	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
+	for i, cache, remain := n-1, src.Int63(), letterIdxMax; i >= 0; {
+		if remain == 0 {
+			cache, remain = src.Int63(), letterIdxMax
+		}
+		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
+			b[i] = letterBytes[idx]
+			i--
+		}
+		cache >>= letterIdxBits
+		remain--
+	}
+
+	return string(b)
 }
 
 func TestRefs(t *testing.T) {
@@ -457,6 +587,7 @@ func randBytes(is is.I, size int) []byte {
 	is.Nil(err)
 	return b
 }
+
 func TestStorageUploadWithOnSign(t *testing.T) {
 	is := is.New(t)
 	err := utils.LoadApiConfig()
@@ -473,21 +604,18 @@ func TestStorageUploadWithOnSign(t *testing.T) {
 	var storage *Storage
 LOOP:
 	for {
+		sleepMoment()
 		storage, err = s.StorageUploadStatus(sessionId)
 		is.Nil(err)
 		switch storage.Status {
 		case "complete":
+			fmt.Printf("Complete\n")
 			break LOOP
 		case "error":
-			fmt.Printf("%#v, %#v\n", storage.Status, storage.Message)
-			t.Fatal(fmt.Errorf("%s", storage.Message))
-		default:
-			fmt.Printf("%#v continue \n", storage.Status)
-			sleepMoment()
-			continue
+			t.Fatal(fmt.Errorf("Failed: %s", storage.Message))
+			break LOOP
 		}
 	}
-	fmt.Printf("Complete\n")
 }
 
 func TestStorageUploadWithOffSign(t *testing.T) {
@@ -504,7 +632,6 @@ func TestStorageUploadWithOffSign(t *testing.T) {
 	sessionId, err := s.StorageUploadOffSign(mhash, uts)
 	is.Nil(err)
 
-	//var storage Storage
 LOOP:
 	for {
 		sleepMoment()
@@ -512,9 +639,11 @@ LOOP:
 		is.Nil(err)
 		switch storage.Status {
 		case "complete":
+			fmt.Printf("Complete\n")
 			break LOOP
 		case "error":
-			t.Fatal(fmt.Errorf("%s", storage.Message))
+			t.Fatal(fmt.Errorf("Failed: %s", storage.Message))
+			break LOOP
 		case "init":
 			ec, err := s.StorageUploadGetContractBatch(sessionId, uts, "escrow")
 			is.Nil(err)
@@ -530,7 +659,6 @@ LOOP:
 			is.Nil(err)
 			err = s.StorageUploadSignBatch(sessionId, gc, uts, "guard")
 			is.Nil(err)
-			fmt.Printf("%#v\n", storage.Status)
 		case "submit", "submit:check-balance-req-singed", "pay", "pay:payin-req-signed", "guard",
 			"guard:file-meta-signed", "wait-upload":
 			unsigned, err := s.StorageUploadGetUnsignedData(sessionId, uts, storage.Status)
@@ -551,10 +679,6 @@ LOOP:
 			default:
 			}
 			is.Nil(err)
-			fmt.Printf("%#v\n", storage.Status)
-		default:
-			fmt.Printf("%#v continue \n", storage.Status)
 		}
 	}
-	fmt.Printf("Complete\n")
 }
