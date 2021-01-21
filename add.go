@@ -70,7 +70,7 @@ func Hash(hash string) AddOpts {
 // CidVersion allows for selecting the CID version that btfs should use.
 func CidVersion(version int) AddOpts {
 	return func(rb *RequestBuilder) error {
-		rb.Option("cid-version", version)
+		rb.Option("v", version)
 		return nil
 	}
 }
