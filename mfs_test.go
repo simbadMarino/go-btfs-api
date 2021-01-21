@@ -17,19 +17,23 @@ func TestMain(m *testing.M) {
 	for _, f := range files {
 		file, err := os.Open(fmt.Sprintf("./testdata/%s", f))
 		if err != nil {
+			fmt.Printf("Unable to open file ./testdata/%s: %v\n", f, err)
 			os.Exit(1)
 		}
 
 		err = s.FilesWrite(context.Background(), fmt.Sprintf("/testdata/%s", f), file, FilesWrite.Parents(true), FilesWrite.Create(true))
 		if err != nil {
+			fmt.Printf("Unable to write to file ./testdata/%s: %v\n", f, err)
 			os.Exit(1)
 		}
 	}
 
 	exitVal := m.Run()
 	if err := s.FilesRm(context.Background(), "/testdata", true); err != nil {
+		fmt.Printf("Unable to remove folder /testdata: %v\n", err)
 		os.Exit(1)
 	}
+	fmt.Printf("TestMain: exit value %d\n", exitVal)
 	os.Exit(exitVal)
 }
 

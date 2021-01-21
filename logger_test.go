@@ -3,24 +3,22 @@ package shell
 import (
 	"context"
 	"testing"
+
+	"github.com/cheekybits/is"
 )
 
 func TestLogger(t *testing.T) {
+	is := is.New(t)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	sh := NewShell(shellUrl)
 	logger, err := sh.GetLogs(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
+	is.Nil(err)
 	defer func() {
-		if err := logger.Close(); err != nil {
-			t.Fatal(err)
-		}
+		err := logger.Close()
+		is.Nil(err)
 	}()
-	if l, err := logger.Next(); err != nil {
-		t.Fatal(err)
-	} else if l == nil {
-		t.Fatal("no logs found")
-	}
+	l, err := logger.Next()
+	is.Nil(err)
+	is.NotNil(l)
 }

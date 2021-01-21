@@ -1,38 +1,29 @@
 package shell
 
 import (
-	"fmt"
 	"testing"
 	"time"
+
+	"github.com/cheekybits/is"
 )
 
 var examplesHashForIPNS = "/btfs/Qmbu7x6gJbsKDcseQv66pSbUcAA3Au6f7MfTYVXwvBxN2K"
 var testKey = "self" // feel free to change to whatever key you have locally
 
 func TestPublishDetailsWithKey(t *testing.T) {
-	t.Skip()
-	shell := NewShell("localhost:5001")
+	is := is.New(t)
+	shell := NewShell(shellUrl)
 
 	resp, err := shell.PublishWithDetails(examplesHashForIPNS, testKey, time.Second, time.Second, false)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if resp.Value != examplesHashForIPNS {
-		t.Fatalf(fmt.Sprintf("Expected to receive %s but got %s", examplesHash, resp.Value))
-	}
+	is.Nil(err)
+	is.Equal(resp.Value, examplesHashForIPNS)
 }
 
 func TestPublishDetailsWithoutKey(t *testing.T) {
-	t.Skip()
-	shell := NewShell("localhost:5001")
+	is := is.New(t)
+	shell := NewShell(shellUrl)
 
 	resp, err := shell.PublishWithDetails(examplesHashForIPNS, "", time.Second, time.Second, false)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if resp.Value != examplesHashForIPNS {
-		t.Fatalf(fmt.Sprintf("Expected to receive %s but got %s", examplesHash, resp.Value))
-	}
+	is.Nil(err)
+	is.Equal(resp.Value, examplesHashForIPNS)
 }
