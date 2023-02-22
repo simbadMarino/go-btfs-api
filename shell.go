@@ -19,10 +19,10 @@ import (
 	files "github.com/TRON-US/go-btfs-files"
 	homedir "github.com/mitchellh/go-homedir"
 	ma "github.com/multiformats/go-multiaddr"
-	manet "github.com/multiformats/go-multiaddr-net"
+	manet "github.com/multiformats/go-multiaddr/net"
 	tar "github.com/whyrusleeping/tar-utils"
 
-	p2pmetrics "github.com/libp2p/go-libp2p-core/metrics"
+	p2pmetrics "github.com/libp2p/go-libp2p/core/metrics"
 )
 
 const (
@@ -144,7 +144,8 @@ type IdOutput struct {
 // ID gets information about a given peer.  Arguments:
 //
 // peer: peer.ID of the node to look up.  If no peer is specified,
-//   return information about the local peer.
+//
+//	return information about the local peer.
 func (s *Shell) ID(peer ...string) (*IdOutput, error) {
 	if len(peer) > 1 {
 		return nil, fmt.Errorf("Too many peer arguments")

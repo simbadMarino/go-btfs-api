@@ -4,15 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/libp2p/go-libp2p-core/peer"
 	"strconv"
 	"time"
+
+	"github.com/libp2p/go-libp2p/core/peer"
 
 	utils "github.com/TRON-US/go-btfs-api/utils"
 	"github.com/gogo/protobuf/proto"
 	"github.com/tron-us/go-common/v2/json"
 
-	ic "github.com/libp2p/go-libp2p-core/crypto"
+	ic "github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/tron-us/go-btfs-common/crypto"
 	escrowpb "github.com/tron-us/go-btfs-common/protos/escrow"
 	guardpb "github.com/tron-us/go-btfs-common/protos/guard"
@@ -88,7 +89,7 @@ func (d UnsignedData) SignBalanceData(privateKey string) (*ledgerpb.SignedPublic
 	if err != nil {
 		return nil, err
 	}
-	pubKeyRaw, err := ic.RawFull(privKey.GetPublic())
+	pubKeyRaw, err := ic.MarshalPublicKey(privKey.GetPublic())
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +190,7 @@ func NewSessionSignature(hash string, peerIdStr string, uts string, verifyBefore
 	}
 	utils.SetSessionSignature(sigStr)
 
-	peerId, err := peer.IDB58Decode(utils.GetPeerId())
+	peerId, err := peer.IDFromBytes([]byte(utils.GetPeerId()))
 	if err != nil {
 		return "", err
 	}
@@ -367,11 +368,11 @@ func (s *Shell) StorageUploadSignPayChannel(id string, unsignedData *UnsignedDat
 	if err != nil {
 		return err
 	}
-	fromAddr, err := ic.RawFull(buyerPubKey)
+	fromAddr, err := ic.MarshalPublicKey(buyerPubKey)
 	if err != nil {
 		return err
 	}
-	toAddr, err := ic.RawFull(escrowPubKey)
+	toAddr, err := ic.MarshalPublicKey(escrowPubKey)
 	if err != nil {
 		return err
 	}
@@ -436,7 +437,7 @@ func (s *Shell) StorageUploadSignPayRequest(id string, unsignedData *UnsignedDat
 	}
 	chanState.FromSignature = sig
 	payerPubKey, _ := crypto.ToPubKey(utils.GetPublicKey())
-	raw, err := ic.RawFull(payerPubKey)
+	raw, err := ic.MarshalPublicKey(payerPubKey)
 	if err != nil {
 		return err
 	}

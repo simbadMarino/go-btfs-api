@@ -9,7 +9,7 @@ import (
 	serialize "github.com/TRON-US/go-btfs-config/serialize"
 	"github.com/tron-us/go-btfs-common/crypto"
 
-	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/mitchellh/go-homedir"
 	_ "github.com/mitchellh/go-homedir"
 )
@@ -73,7 +73,7 @@ func LoadApiConfig() error {
 	}
 
 	if ApiConfig.PublicKey == "" {
-		peerId, err := peer.IDB58Decode(ApiConfig.PeerId)
+		peerId, err := peer.IDFromBytes([]byte(ApiConfig.PeerId))
 		if err != nil {
 			return err
 		}
