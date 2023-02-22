@@ -8,7 +8,7 @@ require (
 	github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927
 	github.com/gogo/protobuf v1.3.2
 	github.com/ipfs/go-ipfs-util v0.0.2
-	github.com/libp2p/go-libp2p v0.25.1
+	github.com/libp2p/go-libp2p v0.24.2
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/multiformats/go-multiaddr v0.8.0
 	github.com/tron-us/go-btfs-common v0.7.10
@@ -18,7 +18,6 @@ require (
 
 require (
 	github.com/benbjohnson/clock v1.3.0 // indirect
-	github.com/btcsuite/btcd v0.20.1-beta // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.2 // indirect
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce // indirect
 	github.com/codemodus/kace v0.5.1 // indirect
@@ -50,8 +49,8 @@ require (
 	github.com/multiformats/go-multibase v0.1.1 // indirect
 	github.com/multiformats/go-multicodec v0.8.1 // indirect
 	github.com/multiformats/go-multihash v0.2.1 // indirect
-	github.com/multiformats/go-multistream v0.4.1 // indirect
 	github.com/multiformats/go-varint v0.0.7 // indirect
+	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
 	github.com/segmentio/encoding v0.3.6 // indirect
@@ -75,7 +74,6 @@ require (
 	lukechampine.com/blake3 v1.1.7 // indirect
 	mellium.im/sasl v0.3.1 // indirect
 )
-
 
 // replace github.com/libp2p/go-libp2p/core => github.com/TRON-US/go-libp2p/core v0.7.1
 replace github.com/TRON-US/go-btfs-config => /Users/shawn.huang/github/Shwan-Huang-Tron/go-btfs-config
