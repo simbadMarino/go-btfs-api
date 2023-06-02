@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	files "github.com/TRON-US/go-btfs-files"
+	files "github.com/bittorrent/go-btfs-files"
 )
 
 type object struct {

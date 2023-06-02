@@ -1,18 +1,18 @@
-module github.com/TRON-US/go-btfs-api
+module github.com/bittorrent/go-btfs-api
 
 go 1.18
 
 require (
-	github.com/TRON-US/go-btfs-config v0.11.13-0.20230302065423-e10f87f21752
-	github.com/TRON-US/go-btfs-files v0.2.0
+	github.com/bittorrent/go-btfs-common v0.9.0
+	github.com/bittorrent/go-btfs-config v0.12.0
+	github.com/bittorrent/go-btfs-files v0.3.0
+	github.com/bittorrent/go-common/v2 v2.4.0
 	github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927
 	github.com/gogo/protobuf v1.3.2
 	github.com/ipfs/go-ipfs-util v0.0.2
 	github.com/libp2p/go-libp2p v0.24.2
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/multiformats/go-multiaddr v0.8.0
-	github.com/tron-us/go-btfs-common v0.8.14-0.20230322132332-b16546817ed8
-	github.com/tron-us/go-common/v2 v2.3.2
 	github.com/whyrusleeping/tar-utils v0.0.0-20201201191210-20a61371de5b
 )
 
@@ -23,6 +23,7 @@ require (
 
 require (
 	github.com/benbjohnson/clock v1.3.0 // indirect
+	github.com/bittorrent/protobuf v1.4.0 // indirect
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce // indirect
 	github.com/codemodus/kace v0.5.1 // indirect
 	github.com/crackcomm/go-gitignore v0.0.0-20170627025303-887ab5e44cc3 // indirect
@@ -32,7 +33,7 @@ require (
 	github.com/go-pg/pg/v9 v9.2.1 // indirect
 	github.com/go-pg/zerochecker v0.2.0 // indirect
 	github.com/go-redis/redis/v7 v7.4.1 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/ipfs/go-cid v0.3.2 // indirect
 	github.com/ipfs/go-log/v2 v2.5.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
@@ -59,7 +60,6 @@ require (
 	github.com/segmentio/encoding v0.3.6 // indirect
 	github.com/spacemonkeygo/spacelog v0.0.0-20180420211403-2296661a0572 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
-	github.com/tron-us/protobuf v1.3.7 // indirect
 	github.com/vmihailenco/bufpool v0.1.11 // indirect
 	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
 	github.com/vmihailenco/tagparser v0.1.2 // indirect
@@ -68,12 +68,12 @@ require (
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/crypto v0.6.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
-	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230221151758-ace64dc21148 // indirect
 	google.golang.org/grpc v1.53.0 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	google.golang.org/protobuf v1.30.0 // indirect
 	lukechampine.com/blake3 v1.1.7 // indirect
 	mellium.im/sasl v0.3.1 // indirect
 )
