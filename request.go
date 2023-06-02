@@ -12,7 +12,7 @@ import (
 	"os"
 	"strings"
 
-	files "github.com/TRON-US/go-btfs-files"
+	files "github.com/bittorrent/go-btfs-files"
 )
 
 const (

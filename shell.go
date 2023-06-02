@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	files "github.com/TRON-US/go-btfs-files"
+	files "github.com/bittorrent/go-btfs-files"
 	homedir "github.com/mitchellh/go-homedir"
 	ma "github.com/multiformats/go-multiaddr"
 	manet "github.com/multiformats/go-multiaddr/net"

@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	serialize "github.com/TRON-US/go-btfs-config/serialize"
-	"github.com/tron-us/go-btfs-common/crypto"
+	"github.com/bittorrent/go-btfs-common/crypto"
+	serialize "github.com/bittorrent/go-btfs-config/serialize"
 
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/mitchellh/go-homedir"

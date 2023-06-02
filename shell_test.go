@@ -18,9 +18,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TRON-US/go-btfs-api/options"
-	"github.com/TRON-US/go-btfs-api/utils"
-	files "github.com/TRON-US/go-btfs-files"
+	"github.com/bittorrent/go-btfs-api/options"
+	"github.com/bittorrent/go-btfs-api/utils"
+	files "github.com/bittorrent/go-btfs-files"
 	"github.com/cheekybits/is"
 	u "github.com/ipfs/go-ipfs-util"
 )
