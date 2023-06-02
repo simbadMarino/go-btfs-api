@@ -3,7 +3,7 @@ module github.com/TRON-US/go-btfs-api
 go 1.18
 
 require (
-	github.com/TRON-US/go-btfs-config v0.6.0
+	github.com/TRON-US/go-btfs-config v0.11.13-0.20230302065423-e10f87f21752
 	github.com/TRON-US/go-btfs-files v0.2.0
 	github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927
 	github.com/gogo/protobuf v1.3.2
@@ -11,19 +11,22 @@ require (
 	github.com/libp2p/go-libp2p v0.24.2
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/multiformats/go-multiaddr v0.8.0
-	github.com/tron-us/go-btfs-common v0.7.10
+	github.com/tron-us/go-btfs-common v0.8.14-0.20230322132332-b16546817ed8
 	github.com/tron-us/go-common/v2 v2.3.2
 	github.com/whyrusleeping/tar-utils v0.0.0-20201201191210-20a61371de5b
 )
 
 require (
+	github.com/btcsuite/btcd v0.20.1-beta // indirect
+	github.com/ethereum/go-ethereum v1.9.24 // indirect
+)
+
+require (
 	github.com/benbjohnson/clock v1.3.0 // indirect
-	github.com/btcsuite/btcd/btcec/v2 v2.3.2 // indirect
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce // indirect
 	github.com/codemodus/kace v0.5.1 // indirect
 	github.com/crackcomm/go-gitignore v0.0.0-20170627025303-887ab5e44cc3 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
-	github.com/ethereum/go-ethereum v1.11.1 // indirect
 	github.com/facebookgo/atomicfile v0.0.0-20151019160806-2de1f203e7d5 // indirect
 	github.com/go-pg/migrations/v7 v7.1.11 // indirect
 	github.com/go-pg/pg/v9 v9.2.1 // indirect
@@ -74,8 +77,3 @@ require (
 	lukechampine.com/blake3 v1.1.7 // indirect
 	mellium.im/sasl v0.3.1 // indirect
 )
-
-// replace github.com/libp2p/go-libp2p/core => github.com/TRON-US/go-libp2p/core v0.7.1
-replace github.com/TRON-US/go-btfs-config => /Users/shawn.huang/github/Shwan-Huang-Tron/go-btfs-config
-
-replace github.com/tron-us/go-btfs-common => /Users/shawn.huang/github/Shwan-Huang-Tron/go-btfs-common
