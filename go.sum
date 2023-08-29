@@ -80,8 +80,8 @@ github.com/benbjohnson/clock v1.3.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZx
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
-github.com/bittorrent/go-btfs-common v0.9.0 h1:jHcFvYQmvmA4IdvVtkI5d/S/HW65Qz21C6oxeyK812w=
-github.com/bittorrent/go-btfs-common v0.9.0/go.mod h1:OG1n3DfcTxQYfLd5zco54LfL3IiDDaw3s7Igahu0Rj0=
+github.com/simbadMarino/go-btfs-common v0.9.1 h1:rDqu52w7YUbj8zzWBI8mWVx1qbtJn8OtMuaavspsuGs=
+github.com/simbadMarino/go-btfs-common v0.9.1/go.mod h1:Rai4GdRe6R9scTYHYzhYBnEs8plBdgDDi/GIbR2fk0M=
 github.com/bittorrent/go-btfs-config v0.12.0 h1:kIzUlRhfn2O9RhHtOEL2fEFgTbfhbdMoEMnVluU9zh8=
 github.com/bittorrent/go-btfs-config v0.12.0/go.mod h1:DNaHVC9wU84KLKoC4HkvdoFJKVZ7TF530qzfYu30fCI=
 github.com/bittorrent/go-btfs-files v0.3.0 h1:/LnJCeueJc13fNmPmuic9gNLatq/CoKSGGIDOlfkkhQ=
@@ -198,9 +198,6 @@ github.com/go-pg/urlstruct v0.4.0/go.mod h1:/XKyiUOUUS3onjF+LJxbfmSywYAdl6qMfVbX
 github.com/go-pg/zerochecker v0.1.1/go.mod h1:NJZ4wKL0NmTtz0GKCoJ8kym6Xn/EQzXRl2OnAe7MmDo=
 github.com/go-pg/zerochecker v0.2.0 h1:pp7f72c3DobMWOb2ErtZsnrPaSvHd2W4o9//8HtF4mU=
 github.com/go-pg/zerochecker v0.2.0/go.mod h1:NJZ4wKL0NmTtz0GKCoJ8kym6Xn/EQzXRl2OnAe7MmDo=
-github.com/go-redis/redis/v7 v7.4.0/go.mod h1:JDNMw23GTyLNC4GZu9njt15ctBQVn7xjRfnwdHj/Dcg=
-github.com/go-redis/redis/v7 v7.4.1 h1:PASvf36gyUpr2zdOUS/9Zqc80GbM+9BDyiJSJDDOrTI=
-github.com/go-redis/redis/v7 v7.4.1/go.mod h1:JDNMw23GTyLNC4GZu9njt15ctBQVn7xjRfnwdHj/Dcg=
 github.com/go-sourcemap/sourcemap v2.1.2+incompatible/go.mod h1:F8jJfvm2KbVjc5NqelyYJmf/v5J0dwNLS2mL4sNA1Jg=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=

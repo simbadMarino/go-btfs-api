@@ -5,14 +5,14 @@
 ## Install
 
 ```sh
-go get -u github.com/bittorrent/go-btfs-api
+go get -u github.com/simbadMarino/go-btfs-api
 ```
 
-This will download the source into `$GOPATH/src/github.com/bittorrent/go-btfs-api`.
+This will download the source into `$GOPATH/src/github.com/simbadMarino/go-btfs-api`.
 
 ## Usage
 
-See [the godocs](https://pkg.go.dev/github.com/bittorrent/go-btfs-api) for details on available methods.
+See [the godocs](https://pkg.go.dev/github.com/simbadMarino/go-btfs-api) for details on available methods.
 
 ### Example
 
@@ -26,7 +26,7 @@ import (
 	"strings"
 	"os"
 
-	shell "github.com/bittorrent/go-btfs-api"
+	shell "github.com/simbadMarino/go-btfs-api"
 )
 
 func main() {
@@ -41,7 +41,7 @@ func main() {
 }
 ```
 
-For a more complete example, please see: https://github.com/bittorrent/go-btfs-api/blob/master/tests/main.go
+For a more complete example, please see: https://github.com/simbadMarino/go-btfs-api/blob/master/tests/main.go
 
 ## Contribute
 

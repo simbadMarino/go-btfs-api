@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/bittorrent/go-btfs-common/crypto"
+	"github.com/simbadMarino/go-btfs-common/crypto"
 	serialize "github.com/bittorrent/go-btfs-config/serialize"
 
 	"github.com/libp2p/go-libp2p/core/peer"

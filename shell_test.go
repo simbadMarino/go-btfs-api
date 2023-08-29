@@ -18,8 +18,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bittorrent/go-btfs-api/options"
-	"github.com/bittorrent/go-btfs-api/utils"
+	"github.com/simbadMarino/go-btfs-api/options"
+	"github.com/simbadMarino/go-btfs-api/utils"
 	files "github.com/bittorrent/go-btfs-files"
 	"github.com/cheekybits/is"
 	u "github.com/ipfs/go-ipfs-util"

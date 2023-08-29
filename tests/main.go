@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	shell "github.com/bittorrent/go-btfs-api"
+	shell "github.com/simbadMarino/go-btfs-api"
 	"io"
 	"math/rand"
 	"time"

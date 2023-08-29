@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/bittorrent/go-btfs-api/options"
+	"github.com/simbadMarino/go-btfs-api/options"
 	files "github.com/bittorrent/go-btfs-files"
 )
 

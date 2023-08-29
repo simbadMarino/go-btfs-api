@@ -1,9 +1,9 @@
-module github.com/bittorrent/go-btfs-api
+module github.com/simbadMarino/go-btfs-api
 
 go 1.18
 
 require (
-	github.com/bittorrent/go-btfs-common v0.9.0
+	github.com/simbadMarino/go-btfs-common v0.9.1
 	github.com/bittorrent/go-btfs-config v0.12.0
 	github.com/bittorrent/go-btfs-files v0.3.0
 	github.com/bittorrent/go-common/v2 v2.4.0
@@ -32,7 +32,6 @@ require (
 	github.com/go-pg/migrations/v7 v7.1.11 // indirect
 	github.com/go-pg/pg/v9 v9.2.1 // indirect
 	github.com/go-pg/zerochecker v0.2.0 // indirect
-	github.com/go-redis/redis/v7 v7.4.1 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/ipfs/go-cid v0.3.2 // indirect
 	github.com/ipfs/go-log/v2 v2.5.1 // indirect
