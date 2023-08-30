@@ -6,7 +6,6 @@ require (
 	github.com/simbadMarino/go-btfs-common v0.9.1
 	github.com/bittorrent/go-btfs-config v0.12.0
 	github.com/bittorrent/go-btfs-files v0.3.0
-	github.com/simbadMarino/go-common/v2 v2.4.0
 	github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927
 	github.com/gogo/protobuf v1.3.2
 	github.com/ipfs/go-ipfs-util v0.0.2
