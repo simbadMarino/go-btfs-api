@@ -10,7 +10,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/peer"
 
 	utils "github.com/simbadMarino/go-btfs-api/utils"
-	"github.com/bittorrent/go-common/v2/json"
+	"github.com/simbadMarino/go-common/v2/json"
 	"github.com/gogo/protobuf/proto"
 
 	"github.com/simbadMarino/go-btfs-common/crypto"
