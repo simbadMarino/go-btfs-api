@@ -80,12 +80,14 @@ github.com/benbjohnson/clock v1.3.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZx
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
-github.com/simbadMarino/go-btfs-common v0.9.1 h1:rDqu52w7YUbj8zzWBI8mWVx1qbtJn8OtMuaavspsuGs=
-github.com/simbadMarino/go-btfs-common v0.9.1/go.mod h1:Rai4GdRe6R9scTYHYzhYBnEs8plBdgDDi/GIbR2fk0M=
+github.com/bittorrent/go-btfs-common v0.9.0 h1:jHcFvYQmvmA4IdvVtkI5d/S/HW65Qz21C6oxeyK812w=
+github.com/bittorrent/go-btfs-common v0.9.0/go.mod h1:OG1n3DfcTxQYfLd5zco54LfL3IiDDaw3s7Igahu0Rj0=
 github.com/bittorrent/go-btfs-config v0.12.0 h1:kIzUlRhfn2O9RhHtOEL2fEFgTbfhbdMoEMnVluU9zh8=
 github.com/bittorrent/go-btfs-config v0.12.0/go.mod h1:DNaHVC9wU84KLKoC4HkvdoFJKVZ7TF530qzfYu30fCI=
 github.com/bittorrent/go-btfs-files v0.3.0 h1:/LnJCeueJc13fNmPmuic9gNLatq/CoKSGGIDOlfkkhQ=
 github.com/bittorrent/go-btfs-files v0.3.0/go.mod h1:ylMf73m6oK94hL7VPblY1ZZpePsr6XbPV4BaNUwGZR0=
+github.com/bittorrent/go-common/v2 v2.4.0 h1:u0jldKnQteTPQDNKj5GUBOUj2Tswn0+GfWN7yq2QAaY=
+github.com/bittorrent/go-common/v2 v2.4.0/go.mod h1:DVJCWPoehldR7u0K1n9UeKKsQL28mYiY7XMShjGfB3I=
 github.com/bittorrent/protobuf v1.4.0 h1:3AW4SZUud3/8/orb8O/957CdspwxWjX/qprvF49aQ70=
 github.com/bittorrent/protobuf v1.4.0/go.mod h1:k2fZczatqZOyvWUezE02Xt5uFcVqdUd1tNeZwXjELCk=
 github.com/btcsuite/btcd v0.0.0-20171128150713-2e60448ffcc6/go.mod h1:Dmm/EzmjnCiweXmzRIAiUWCInVmPgjkzgv5k4tVyXiQ=
@@ -196,6 +198,8 @@ github.com/go-pg/urlstruct v0.4.0/go.mod h1:/XKyiUOUUS3onjF+LJxbfmSywYAdl6qMfVbX
 github.com/go-pg/zerochecker v0.1.1/go.mod h1:NJZ4wKL0NmTtz0GKCoJ8kym6Xn/EQzXRl2OnAe7MmDo=
 github.com/go-pg/zerochecker v0.2.0 h1:pp7f72c3DobMWOb2ErtZsnrPaSvHd2W4o9//8HtF4mU=
 github.com/go-pg/zerochecker v0.2.0/go.mod h1:NJZ4wKL0NmTtz0GKCoJ8kym6Xn/EQzXRl2OnAe7MmDo=
+github.com/go-redis/redis/v7 v7.4.0 h1:7obg6wUoj05T0EpY0o8B59S9w5yeMWql7sw2kwNW1x4=
+github.com/go-redis/redis/v7 v7.4.0/go.mod h1:JDNMw23GTyLNC4GZu9njt15ctBQVn7xjRfnwdHj/Dcg=
 github.com/go-sourcemap/sourcemap v2.1.2+incompatible/go.mod h1:F8jJfvm2KbVjc5NqelyYJmf/v5J0dwNLS2mL4sNA1Jg=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
@@ -394,7 +398,6 @@ github.com/naoina/go-stringutil v0.1.0/go.mod h1:XJ2SJL9jCtBh+P9q5btrd/Ylo8XwT/h
 github.com/naoina/toml v0.1.2-0.20170918210437-9fafd6967416/go.mod h1:NBIhNtsFMo3G2szEBne+bO4gS192HuIYRqfvOWb4i1E=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
 github.com/nxadm/tail v1.4.8 h1:nPr65rt6Y5JFSKQO7qToXr7pePgD6Gwiw05lkbyAQTE=
-github.com/nxadm/tail v1.4.8/go.mod h1:+ncqLTQzXmGhMZNUePPaPqPvBxHAIsmXswZKocGu+AU=
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
 github.com/olekukonko/tablewriter v0.0.1/go.mod h1:vsDQFd/mU46D+Z4whnwzcISnGGzXWMclvtLoiIKAKIo=
 github.com/olekukonko/tablewriter v0.0.2-0.20190409134802-7e037d187b0c/go.mod h1:vsDQFd/mU46D+Z4whnwzcISnGGzXWMclvtLoiIKAKIo=
@@ -469,6 +472,10 @@ github.com/segmentio/encoding v0.3.6 h1:E6lVLyDPseWEulBmCmAKPanDd3jiyGDo5gMcugCR
 github.com/segmentio/encoding v0.3.6/go.mod h1:n0JeuIqEQrQoPDGsjo8UNd1iA0U8d8+oHAA4E3G3OxM=
 github.com/shirou/gopsutil v2.20.5+incompatible/go.mod h1:5b4v6he4MtMOwMlS0TUMTu2PcXUg8+E1lC7eC3UO/RA=
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
+github.com/simbadMarino/go-btfs-api v0.5.1 h1:1Kmqb6aM4IBYWKCqneTsWNUWi/SSku/ewCJtgq8OtVQ=
+github.com/simbadMarino/go-btfs-api v0.5.1/go.mod h1:rjsYKdBii8OIe1d2aP+k4GjNlxxSATZrwqlNPAduf5k=
+github.com/simbadMarino/go-btfs-common v0.9.1 h1:rDqu52w7YUbj8zzWBI8mWVx1qbtJn8OtMuaavspsuGs=
+github.com/simbadMarino/go-btfs-common v0.9.1/go.mod h1:Rai4GdRe6R9scTYHYzhYBnEs8plBdgDDi/GIbR2fk0M=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/sirupsen/logrus v1.4.2/go.mod h1:tLMulIdttU9McNUspp0xgXVQah82FyeX6MwdIuYE2rE=
 github.com/sirupsen/logrus v1.6.0/go.mod h1:7uNnSEd1DgxDLC74fIahvMZmmYsHGZGEOFrfsX/uA88=

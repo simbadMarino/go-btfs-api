@@ -1,17 +1,17 @@
-module github.com/simbadMarino/go-btfs-api
+module github.com/bittorrent/go-btfs-api
 
 go 1.18
 
 require (
-	github.com/simbadMarino/go-btfs-common v0.9.1
 	github.com/bittorrent/go-btfs-config v0.12.0
 	github.com/bittorrent/go-btfs-files v0.3.0
 	github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927
-	github.com/gogo/protobuf v1.3.2
 	github.com/ipfs/go-ipfs-util v0.0.2
 	github.com/libp2p/go-libp2p v0.24.2
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/multiformats/go-multiaddr v0.8.0
+	github.com/simbadMarino/go-btfs-api v0.5.1
+	github.com/simbadMarino/go-btfs-common v0.9.1
 	github.com/whyrusleeping/tar-utils v0.0.0-20201201191210-20a61371de5b
 )
 
@@ -22,6 +22,8 @@ require (
 
 require (
 	github.com/benbjohnson/clock v1.3.0 // indirect
+	github.com/bittorrent/go-btfs-common v0.9.0 // indirect
+	github.com/bittorrent/go-common/v2 v2.4.0 // indirect
 	github.com/bittorrent/protobuf v1.4.0 // indirect
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce // indirect
 	github.com/codemodus/kace v0.5.1 // indirect
@@ -31,6 +33,8 @@ require (
 	github.com/go-pg/migrations/v7 v7.1.11 // indirect
 	github.com/go-pg/pg/v9 v9.2.1 // indirect
 	github.com/go-pg/zerochecker v0.2.0 // indirect
+	github.com/go-redis/redis/v7 v7.4.0 // indirect
+	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/ipfs/go-cid v0.3.2 // indirect
 	github.com/ipfs/go-log/v2 v2.5.1 // indirect
@@ -52,7 +56,6 @@ require (
 	github.com/multiformats/go-multicodec v0.8.1 // indirect
 	github.com/multiformats/go-multihash v0.2.1 // indirect
 	github.com/multiformats/go-varint v0.0.7 // indirect
-	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
 	github.com/segmentio/encoding v0.3.6 // indirect
